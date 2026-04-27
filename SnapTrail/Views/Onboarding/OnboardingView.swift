@@ -1,7 +1,12 @@
 import SwiftUI
+import AVFoundation
+import CoreLocation
+import Combine
 
 struct OnboardingView: View {
     let onContinue: () -> Void
+
+    @StateObject private var permissionHandler = PermissionHandler()
 
     var body: some View {
         ZStack {
@@ -98,14 +103,59 @@ struct OnboardingView: View {
 
                 Spacer()
 
+                // Permission status hints (shown after first attempt)
+                if permissionHandler.showPermissionHint {
+                    VStack(spacing: 6) {
+                        if !permissionHandler.cameraGranted {
+                            permissionRow(
+                                icon: "camera.fill",
+                                text: "Camera access required",
+                                granted: false
+                            )
+                        }
+                        if !permissionHandler.locationGranted {
+                            permissionRow(
+                                icon: "location.fill",
+                                text: "Location access required",
+                                granted: false
+                            )
+                        }
+
+                        // If permissions were denied, show Settings button
+                        if permissionHandler.needsSettings {
+                            Button {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            } label: {
+                                Text("Open Settings")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 24)
+                                    .padding(.vertical, 10)
+                                    .background(Color.snapAccent)
+                                    .clipShape(Capsule())
+                            }
+                            .padding(.top, 4)
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 8)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+
                 // Continue button
                 PrimaryButton(title: "Continue", systemImage: "arrow.right") {
-                    onContinue()
+                    permissionHandler.requestAllPermissions {
+                        onContinue()
+                    }
                 }
                 .padding(.horizontal, 32)
                 .padding(.bottom, 40)
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: permissionHandler.showPermissionHint)
     }
 
     private func featureBadge(icon: String, text: String) -> some View {
@@ -123,6 +173,127 @@ struct OnboardingView: View {
         .padding(.vertical, 8)
         .background(Color.snapCardLight)
         .clipShape(Capsule())
+    }
+
+    private func permissionRow(icon: String, text: String, granted: Bool) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundColor(granted ? .green : .orange)
+            Text(text)
+                .font(.caption)
+                .foregroundColor(granted ? .green : .orange)
+            Spacer()
+            Image(systemName: granted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundColor(granted ? .green : .orange)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.snapCard)
+        .cornerRadius(12)
+    }
+}
+
+// MARK: - Permission Handler
+
+@MainActor
+final class PermissionHandler: ObservableObject {
+    @Published var cameraGranted = false
+    @Published var locationGranted = false
+    @Published var showPermissionHint = false
+    @Published var needsSettings = false
+
+    private let locationManager = CLLocationManager()
+
+    /// Requests camera and location permissions, then calls completion.
+    func requestAllPermissions(completion: @escaping () -> Void) {
+        requestCameraPermission {
+            self.requestLocationPermission {
+                self.updateStatus()
+                if self.cameraGranted && self.locationGranted {
+                    completion()
+                } else {
+                    // Show hints about what's missing
+                    self.showPermissionHint = true
+                    self.checkIfNeedsSettings()
+                }
+            }
+        }
+    }
+
+    private func requestCameraPermission(completion: @escaping () -> Void) {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        switch status {
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { _ in
+                Task { @MainActor in
+                    self.updateStatus()
+                    completion()
+                }
+            }
+        default:
+            cameraGranted = status == .authorized
+            completion()
+        }
+    }
+
+    private func requestLocationPermission(completion: @escaping () -> Void) {
+        let status = locationManager.authorizationStatus
+        switch status {
+        case .notDetermined:
+            // CLLocationManager needs a delegate for async authorization
+            let delegate = LocationPermissionDelegate {
+                self.updateStatus()
+                completion()
+            }
+            locationManager.delegate = delegate
+            // Store delegate reference to prevent deallocation
+            _locationDelegate = delegate
+            locationManager.requestWhenInUseAuthorization()
+        default:
+            locationGranted = status == .authorizedWhenInUse || status == .authorizedAlways
+            completion()
+        }
+    }
+
+    private var _locationDelegate: LocationPermissionDelegate?
+
+    private func updateStatus() {
+        cameraGranted = AVCaptureDevice.authorizationStatus(for: .video) == .authorized
+        let locStatus = locationManager.authorizationStatus
+        locationGranted = locStatus == .authorizedWhenInUse || locStatus == .authorizedAlways
+    }
+
+    private func checkIfNeedsSettings() {
+        let cameraStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        let locationStatus = locationManager.authorizationStatus
+
+        // If either permission has been explicitly denied/restricted, user needs to go to Settings
+        let cameraDenied = cameraStatus == .denied || cameraStatus == .restricted
+        let locationDenied = locationStatus == .denied || locationStatus == .restricted
+
+        needsSettings = cameraDenied || locationDenied
+    }
+}
+
+// MARK: - Location Permission Delegate
+
+private class LocationPermissionDelegate: NSObject, CLLocationManagerDelegate {
+    private let onChange: () -> Void
+
+    init(onChange: @escaping () -> Void) {
+        self.onChange = onChange
+        super.init()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        // Only fire callback once a decision is made
+        if manager.authorizationStatus != .notDetermined {
+            Task { @MainActor in
+                self.onChange()
+            }
+        }
     }
 }
 
