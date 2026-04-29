@@ -15,6 +15,7 @@ struct MemoryDetailItemView: View {
             let screenWidth = geo.size.width
             let horizontalPadding: CGFloat = 20
             let cardWidth = screenWidth - horizontalPadding * 2
+            let cardHeight = geo.size.height - 120
 
             // Center everything vertically inside the container page
             VStack(spacing: 0) {
@@ -80,7 +81,12 @@ struct MemoryDetailItemView: View {
                                     .padding(.vertical, 14)
                                     .background(.ultraThinMaterial)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    .overlay(
+                                         RoundedRectangle(cornerRadius: 16)
+                                             .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                                     )
                                     .padding(.horizontal, 16)
+                                
                             }
 
                             // Time + Favourite row (inside the card)
@@ -89,10 +95,10 @@ struct MemoryDetailItemView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: "clock")
                                         .font(.caption)
-                                        .foregroundColor(.snapTextSecondary)
+                                        .foregroundColor(.white)
                                     Text(DateFormatterHelper.displayTime(memory.dateTime))
                                         .font(.subheadline)
-                                        .foregroundColor(.snapTextSecondary)
+                                        .foregroundColor(.white)
                                 }
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
@@ -149,7 +155,7 @@ struct MemoryDetailItemView: View {
 
                 Spacer()
             }
-            .frame(width: geo.size.width, height: geo.size.height)
+            .frame(width: geo.size.width, height: cardHeight)
         }
         .confirmationDialog(
             "Delete Memory",
@@ -172,4 +178,16 @@ struct MemoryDetailItemView: View {
             print("Failed to toggle favourite: \(error)")
         }
     }
+}
+
+#Preview {
+    MemoryDetailItemView(
+        memory: PreviewContainer.sampleMemory,
+        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+        onDelete: {
+            print("Delete requested in preview")
+        }
+    )
+    .background(Color.snapBackground)
+    .modelContainer(PreviewContainer.shared)
 }
