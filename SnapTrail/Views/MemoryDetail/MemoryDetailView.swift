@@ -12,6 +12,8 @@ struct MemoryDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var hasScrolledToInitial = false
+    /// Tracks the index of the page currently visible on screen.
+    @State private var currentIndex: Int = 0
 
     init(memories: [Memory], initialIndex: Int, memoryDataService: MemoryDataService) {
         _localMemories = State(initialValue: memories)
@@ -44,12 +46,16 @@ struct MemoryDetailView: View {
                                     memory: memory,
                                     memoryDataService: memoryDataService,
                                     onDelete: {
-                                        deleteMemory(memory)
+                                        deleteMemory(memory, proxy: proxy)
                                     }
                                 )
-                                .id(index)
+                                // Use stable UUID — not integer index — so SwiftUI never
+                                // confuses views when items are removed and indices shift.
+                                .id(memory.id)
                                 // Makes each card take exactly the height of the ScrollView (TikTok style)
                                 .containerRelativeFrame(.vertical)
+                                // Track which page is currently filling the screen
+                                .onAppear { currentIndex = index }
                             }
                         }
                         .scrollTargetLayout()
@@ -59,7 +65,8 @@ struct MemoryDetailView: View {
                     .onAppear {
                         if !hasScrolledToInitial && !localMemories.isEmpty {
                             // Scroll to the tapped memory without animation on load
-                            proxy.scrollTo(initialIndex, anchor: .top)
+                            proxy.scrollTo(localMemories[initialIndex].id, anchor: .top)
+                            currentIndex = initialIndex
                             hasScrolledToInitial = true
                         }
                     }
@@ -78,16 +85,36 @@ struct MemoryDetailView: View {
         .toolbarBackground(.visible, for: .navigationBar)
     }
 
-    private func deleteMemory(_ memory: Memory) {
+    private func deleteMemory(_ memory: Memory, proxy: ScrollViewProxy) {
+        // Find the position of the item being deleted before we remove it
+        guard let deletedIndex = localMemories.firstIndex(where: { $0.id == memory.id }) else { return }
+
+        // Decide which neighbour to land on after deletion:
+        // • Not the first item  → scroll UP to the previous one
+        // • Is the first item   → scroll DOWN to the next one (which becomes index 0 after removal)
+        let targetID: UUID? = {
+            if deletedIndex > 0 {
+                return localMemories[deletedIndex - 1].id   // item before
+            } else if localMemories.count > 1 {
+                return localMemories[deletedIndex + 1].id   // item after (first becomes new head)
+            }
+            return nil  // only one item left — will dismiss
+        }()
+
         do {
             try memoryDataService.delete(memory)
-            // Remove from local array so the view updates immediately
-            withAnimation {
-                localMemories.removeAll { $0.id == memory.id }
-            }
-            // If all memories are deleted, dismiss
+            localMemories.remove(at: deletedIndex)
+
             if localMemories.isEmpty {
                 dismiss()
+                return
+            }
+
+            // Scroll to the chosen neighbour using its stable UUID
+            if let id = targetID {
+                DispatchQueue.main.async {
+                    proxy.scrollTo(id, anchor: .top)
+                }
             }
         } catch {
             print("Failed to delete memory: \(error)")
