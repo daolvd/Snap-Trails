@@ -16,12 +16,7 @@ final class SaveMemoryViewModel: ObservableObject {
         self.memoryDataService = memoryDataService
     }
 
-    func saveMemory(image: UIImage, location: CLLocation?) -> Bool {
-        guard let location else {
-            errorMessage = AppError.locationUnavailable.localizedDescription
-            return false
-        }
-
+    func saveMemory(image: UIImage, location: CLLocation?, capturedDate: Date = Date()) -> Bool {
         isSaving = true
         defer { isSaving = false }
 
@@ -31,9 +26,9 @@ final class SaveMemoryViewModel: ObservableObject {
             let memory = Memory(
                 imageFileName: fileName,
                 locationName: locationName,
-                latitude: location.coordinate.latitude,
-                longitude: location.coordinate.longitude,
-                dateTime: Date(),
+                latitude: location?.coordinate.latitude ?? 0,
+                longitude: location?.coordinate.longitude ?? 0,
+                dateTime: capturedDate,
                 caption: caption,
                 isFavourite: false,
                 category: selectedCategory
