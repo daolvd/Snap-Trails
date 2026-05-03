@@ -15,7 +15,7 @@ struct MemoryDetailItemView: View {
             let screenWidth = geo.size.width
             let horizontalPadding: CGFloat = 20
             let cardWidth = screenWidth - horizontalPadding * 2
-            let cardHeight = geo.size.height - 120
+            let cardHeight = geo.size.height - 160
 
             // Center everything vertically inside the container page
             VStack(spacing: 0) {
@@ -156,6 +156,7 @@ struct MemoryDetailItemView: View {
                 Spacer()
             }
             .frame(width: geo.size.width, height: cardHeight)
+            .padding(.top, 24)
         }
         .confirmationDialog(
             "Delete Memory",
