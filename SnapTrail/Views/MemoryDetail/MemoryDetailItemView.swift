@@ -26,12 +26,12 @@ struct MemoryDetailItemView: View {
                     ZStack(alignment: .bottom) {
                         // Image with top overlays
                         ZStack(alignment: .top) {
-                            // Photo
+                            // Photo — constrain height so overlays stay visible
                             MemoryImageView(
                                 fileName: memory.imageFileName,
                                 cornerRadius: 24
                             )
-                            .frame(width: cardWidth)
+                            .frame(width: cardWidth, height: cardHeight)
                             .clipped()
 
                             // Top overlay — location badge + delete button

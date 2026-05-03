@@ -16,9 +16,9 @@ struct CameraView: View {
     let categoryDataService: CategoryDataService
 
     @State private var selectedImage: UIImage?
-    @State private var showImagePicker = false
+    @State private var showCamera = false
+    @State private var showGallery = false
     @State private var showSaveMemory = false
-    @State private var pickerSourceType: UIImagePickerController.SourceType = .photoLibrary
 
     var body: some View {
         NavigationStack {
@@ -75,14 +75,9 @@ struct CameraView: View {
                                 // Flash not available in picker mode
                             }
 
-                            // Shutter button
+                            // Shutter button — always opens camera
                             Button {
-                                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                                    pickerSourceType = .camera
-                                } else {
-                                    pickerSourceType = .photoLibrary
-                                }
-                                showImagePicker = true
+                                showCamera = true
                             } label: {
                                 Circle()
                                     .fill(.white)
@@ -96,8 +91,7 @@ struct CameraView: View {
 
                             // Photo library
                             IconButton(systemName: "photo.on.rectangle") {
-                                pickerSourceType = .photoLibrary
-                                showImagePicker = true
+                                showGallery = true
                             }
                         }
                         .padding(.bottom, 16)
@@ -129,8 +123,15 @@ struct CameraView: View {
             }
             .toolbarBackground(Color.snapBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
-            .sheet(isPresented: $showImagePicker) {
-                ImagePicker(sourceType: pickerSourceType) { image in
+            .fullScreenCover(isPresented: $showCamera) {
+                ImagePicker(sourceType: .camera) { image in
+                    selectedImage = image
+                    showSaveMemory = true
+                }
+                .ignoresSafeArea()
+            }
+            .sheet(isPresented: $showGallery) {
+                ImagePicker(sourceType: .photoLibrary) { image in
                     selectedImage = image
                     showSaveMemory = true
                 }
