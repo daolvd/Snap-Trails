@@ -11,6 +11,13 @@ struct ImagePicker: UIViewControllerRepresentable {
         picker.sourceType = sourceType
         picker.delegate = context.coordinator
         picker.allowsEditing = false
+        // Camera must be presented full-screen to prevent the system
+        // from falling back to the photo library picker on first launch.
+        if sourceType == .camera {
+            picker.modalPresentationStyle = .fullScreen
+            picker.cameraCaptureMode = .photo
+            picker.cameraDevice = .rear
+        }
         return picker
     }
 

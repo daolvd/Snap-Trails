@@ -22,6 +22,7 @@ struct SaveMemoryView: View {
     @State private var currentLocation: CLLocation?
     @State private var isFetchingLocation = true
     @State private var showNewTagField = false
+    @State private var showSuccess = false
 
     private let geocodingService = GeocodingService()
 
@@ -92,7 +93,7 @@ struct SaveMemoryView: View {
                                     location: currentLocation
                                 )
                                 if success {
-                                    onDismiss()
+                                    showSuccess = true
                                 }
                             }
                         }
@@ -133,6 +134,13 @@ struct SaveMemoryView: View {
                 Button("OK") { viewModel.errorMessage = nil }
             } message: {
                 Text(viewModel.errorMessage ?? "")
+            }
+            .alert("Success", isPresented: $showSuccess) {
+                Button("OK") {
+                    onDismiss()
+                }
+            } message: {
+                Text("Memory has been uploaded successfully!")
             }
             .alert("Error", isPresented: .constant(categoryVM.errorMessage != nil)) {
                 Button("OK") { categoryVM.errorMessage = nil }
