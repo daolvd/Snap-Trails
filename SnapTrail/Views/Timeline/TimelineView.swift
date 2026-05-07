@@ -4,6 +4,7 @@ import SwiftData
 struct TimelineView: View {
     @ObservedObject var viewModel: TimelineViewModel
     @State private var showSearch = false
+    @State private var displayMode: TimelineDisplayMode = .day
 
     var body: some View {
         NavigationStack {
@@ -17,25 +18,9 @@ struct TimelineView: View {
                         message: "Capture your first memory by tapping the camera tab below."
                     )
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(Array(viewModel.memories.enumerated()), id: \.element.id) { index, memory in
-                                NavigationLink {
-                                    MemoryDetailView(
-                                        memories: viewModel.memories,
-                                        initialIndex: index,
-                                        memoryDataService: viewModel.memoryDataService
-                                    )
-                                } label: {
-                                    MemoryCardView(memory: memory) {
-                                        viewModel.toggleFavourite(memory)
-                                    }
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                    VStack(spacing: 0) {
+                        TimelineModePicker(mode: $displayMode)
+                        contentForMode
                     }
                 }
             }
@@ -75,6 +60,31 @@ struct TimelineView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+        }
+    }
+
+    @ViewBuilder
+    private var contentForMode: some View {
+        switch displayMode {
+        case .day:
+            TimelineDayListView(
+                yearGroups: viewModel.groupedMemories,
+                allMemories: viewModel.memories,
+                memoryDataService: viewModel.memoryDataService,
+                onToggleFavourite: viewModel.toggleFavourite
+            )
+        case .month:
+            TimelineMonthListView(
+                yearGroups: viewModel.groupedMemories,
+                allMemories: viewModel.memories,
+                memoryDataService: viewModel.memoryDataService
+            )
+        case .year:
+            TimelineYearListView(
+                yearGroups: viewModel.groupedMemories,
+                allMemories: viewModel.memories,
+                memoryDataService: viewModel.memoryDataService
+            )
         }
     }
 }

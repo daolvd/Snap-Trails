@@ -23,7 +23,7 @@ final class FavoritesViewModel: ObservableObject {
 
     func toggleFavourite(_ memory: Memory) {
         do {
-            try memoryDataService.toggleFavourite(memory)
+            try memoryDataService.setFavourite(memory, to: !memory.isFavourite)
             fetchFavourites()
         } catch {
             errorMessage = error.localizedDescription

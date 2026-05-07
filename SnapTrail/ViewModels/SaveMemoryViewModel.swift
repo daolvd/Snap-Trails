@@ -10,6 +10,19 @@ final class SaveMemoryViewModel: ObservableObject {
     @Published var isSaving = false
     @Published var errorMessage: String?
 
+    static let captionMaxLength = 1000
+    static let captionWarningThreshold = 900
+
+    var captionCharacterCount: Int { caption.count }
+
+    var captionWarning: String? {
+        caption.count >= Self.captionWarningThreshold
+            ? "\(caption.count)/\(Self.captionMaxLength)"
+            : nil
+    }
+
+    var isCaptionValid: Bool { caption.count <= Self.captionMaxLength }
+
     private let memoryDataService: MemoryDataService
 
     init(memoryDataService: MemoryDataService) {
@@ -17,6 +30,20 @@ final class SaveMemoryViewModel: ObservableObject {
     }
 
     func saveMemory(image: UIImage, location: CLLocation?, capturedDate: Date = Date()) -> Bool {
+        guard isCaptionValid else {
+            errorMessage = AppError.captionTooLong.localizedDescription
+            return false
+        }
+
+        if let location {
+            let lat = location.coordinate.latitude
+            let lon = location.coordinate.longitude
+            guard (-90...90).contains(lat) && (-180...180).contains(lon) else {
+                errorMessage = AppError.invalidCoordinates.localizedDescription
+                return false
+            }
+        }
+
         isSaving = true
         defer { isSaving = false }
 

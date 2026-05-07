@@ -21,7 +21,7 @@ final class MemoryDetailViewModel: ObservableObject {
 
     func toggleFavourite() {
         do {
-            try memoryDataService.toggleFavourite(memory)
+            try memoryDataService.setFavourite(memory, to: !memory.isFavourite)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
