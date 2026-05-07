@@ -2,8 +2,15 @@ import CoreLocation
 
 final class GeocodingService {
     private let geocoder = CLGeocoder()
+    private var cache: [String: String] = [:]
 
     func reverseGeocode(location: CLLocation) async -> String {
+        let key = String(format: "%.4f,%.4f",
+            location.coordinate.latitude,
+            location.coordinate.longitude)
+
+        if let cached = cache[key] { return cached }
+
         do {
             let placemarks = try await geocoder.reverseGeocodeLocation(location)
 
@@ -11,19 +18,14 @@ final class GeocodingService {
                 return "Location unavailable"
             }
 
-            let parts = [
-                place.name,
-                place.locality,
-                place.administrativeArea
-            ]
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
+            let parts = [place.name, place.locality, place.administrativeArea]
+                .compactMap { $0 }
+                .filter { !$0.isEmpty }
 
-            if parts.isEmpty {
-                return "Location unavailable"
-            }
+            let result = parts.isEmpty ? "Location unavailable" : parts.joined(separator: ", ")
+            cache[key] = result
+            return result
 
-            return parts.joined(separator: ", ")
         } catch {
             return "Location unavailable"
         }
