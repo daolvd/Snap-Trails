@@ -5,28 +5,39 @@ struct MemoryImageView: View {
     var cornerRadius: CGFloat = 20
 
     var body: some View {
-        if let uiImage = ImageStorageService.loadImage(fileName: fileName) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFill()
-                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-        } else {
-            ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color.snapCardLight)
-                Image(systemName: "photo")
-                    .font(.largeTitle)
-                    .foregroundColor(.snapTextSecondary)
+        Color.snapCardLight
+            .overlay {
+                if let uiImage = ImageStorageService.loadImage(fileName: fileName) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Image(systemName: "photo")
+                        .font(.largeTitle)
+                        .foregroundColor(.snapTextSecondary)
+                }
             }
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+#Preview("Circle avatar") {
+    ZStack {
+        Color.snapBackground.ignoresSafeArea()
+        HStack(spacing: 16) {
+            MemoryImageView(fileName: "preview-1.jpg", cornerRadius: 30)
+                .frame(width: 60, height: 60)
+            MemoryImageView(fileName: "missing.jpg", cornerRadius: 30)
+                .frame(width: 60, height: 60)
         }
     }
 }
 
-#Preview {
+#Preview("Rounded rect") {
     ZStack {
         Color.snapBackground.ignoresSafeArea()
-        MemoryImageView(fileName: "nonexistent.jpg")
-            .frame(width: 300, height: 400)
+        MemoryImageView(fileName: "preview-1.jpg")
+            .frame(width: 300, height: 200)
             .padding()
     }
 }

@@ -9,7 +9,6 @@ struct MemoryCardView: View {
             // Thumbnail
             MemoryImageView(fileName: memory.imageFileName, cornerRadius: 30)
                 .frame(width: 60, height: 60)
-                .clipped()
 
             // Info
             VStack(alignment: .leading, spacing: 4) {
