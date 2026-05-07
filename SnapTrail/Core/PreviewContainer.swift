@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 import SwiftData
 
@@ -85,3 +86,4 @@ enum PreviewContainer {
         MemoryCategory(name: "Travel", iconName: "airplane", colorName: "green")
     }
 }
+#endif
