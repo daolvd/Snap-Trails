@@ -2,13 +2,25 @@
 import SwiftUI
 import SwiftData
 
-/// Extracted item view to properly observe SwiftData changes on individual Memories
+/// Extracted item view to properly observe SwiftData changes on individual Memories.
+/// Supports long-press gesture to save the photo to the device's Photo Library.
 struct MemoryDetailItemView: View {
     let memory: Memory
     let memoryDataService: MemoryDataService
     let onDelete: () -> Void
 
+    @StateObject private var viewModel: MemoryDetailViewModel
     @State private var showDeleteConfirmation = false
+
+    init(memory: Memory, memoryDataService: MemoryDataService, onDelete: @escaping () -> Void) {
+        self.memory = memory
+        self.memoryDataService = memoryDataService
+        self.onDelete = onDelete
+        _viewModel = StateObject(wrappedValue: MemoryDetailViewModel(
+            memory: memory,
+            memoryDataService: memoryDataService
+        ))
+    }
 
     var body: some View {
         GeometryReader { geo in
@@ -109,7 +121,7 @@ struct MemoryDetailItemView: View {
 
                                 // Favourite button
                                 Button {
-                                    toggleFavourite()
+                                    viewModel.toggleFavourite()
                                 } label: {
                                     Image(systemName: memory.isFavourite ? "heart.fill" : "heart")
                                         .font(.title2)
@@ -133,6 +145,10 @@ struct MemoryDetailItemView: View {
                         RoundedRectangle(cornerRadius: 24)
                             .stroke(Color.white.opacity(0.06), lineWidth: 1)
                     )
+                    // Long-press gesture to save photo to Camera Roll
+                    .onLongPressGesture(minimumDuration: 0.5) {
+                        viewModel.saveImageToPhotos()
+                    }
                     .padding(.horizontal, horizontalPadding)
 
                     // Category tag below the card
@@ -158,6 +174,28 @@ struct MemoryDetailItemView: View {
             .frame(width: geo.size.width, height: cardHeight)
             .padding(.top, 24)
         }
+        // Save-to-Photos toast overlay
+        .overlay(alignment: .top) {
+            if let message = viewModel.saveToastMessage {
+                HStack(spacing: 10) {
+                    Image(systemName: viewModel.saveToastIsError ? "xmark.circle.fill" : "checkmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(viewModel.saveToastIsError ? .red : .green)
+                    Text(message)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.snapTextPrimary)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(.ultraThinMaterial)
+                .clipShape(Capsule())
+                .shadow(color: .black.opacity(0.25), radius: 10, y: 4)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .padding(.top, 60)
+            }
+        }
+        .animation(.spring(duration: 0.4), value: viewModel.saveToastMessage)
         .confirmationDialog(
             "Delete Memory",
             isPresented: $showDeleteConfirmation,
@@ -169,14 +207,6 @@ struct MemoryDetailItemView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This memory will be permanently deleted.")
-        }
-    }
-
-    private func toggleFavourite() {
-        do {
-            try memoryDataService.toggleFavourite(memory)
-        } catch {
-            print("Failed to toggle favourite: \(error)")
         }
     }
 }
@@ -192,3 +222,4 @@ struct MemoryDetailItemView: View {
     .background(Color.snapBackground)
     .modelContainer(PreviewContainer.shared)
 }
+
