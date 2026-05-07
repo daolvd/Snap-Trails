@@ -11,6 +11,7 @@ struct MemoryDetailItemView: View {
 
     @StateObject private var viewModel: MemoryDetailViewModel
     @State private var showDeleteConfirmation = false
+    @State private var showFullCaption = false
 
     init(memory: Memory, memoryDataService: MemoryDataService, onDelete: @escaping () -> Void) {
         self.memory = memory
@@ -83,22 +84,44 @@ struct MemoryDetailItemView: View {
 
                         // Bottom section overlaid on image: caption + time/heart bar
                         VStack(spacing: 0) {
-                            // Caption
+                            // Caption — natural size, truncated with "..." when it would exceed 45% of card height
                             if !memory.caption.isEmpty {
+                                // ~22pt is the line height for .body font; cap the visible lines so the
+                                // bubble cannot exceed 45% of the card height (minus vertical padding).
+                                let captionLineLimit = max(1, Int((cardHeight * 0.45 - 28) / 22))
+
                                 Text(memory.caption)
                                     .font(.body)
                                     .foregroundColor(.snapTextPrimary)
                                     .multilineTextAlignment(.center)
+                                    .lineLimit(captionLineLimit)
+                                    .truncationMode(.tail)
                                     .padding(.horizontal, 20)
                                     .padding(.vertical, 14)
                                     .background(.ultraThinMaterial)
                                     .clipShape(RoundedRectangle(cornerRadius: 16))
                                     .overlay(
-                                         RoundedRectangle(cornerRadius: 16)
-                                             .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                                     )
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                                    )
                                     .padding(.horizontal, 16)
-                                
+                                    .contentShape(Rectangle())
+                                    .onHover { isHovering in
+                                        showFullCaption = isHovering
+                                    }
+                                    .onTapGesture {
+                                        showFullCaption = true
+                                    }
+                                    .popover(isPresented: $showFullCaption) {
+                                        ScrollView {
+                                            Text(memory.caption)
+                                                .font(.body)
+                                                .multilineTextAlignment(.center)
+                                                .padding()
+                                        }
+                                        .frame(minWidth: 260, maxWidth: 320, maxHeight: 400)
+                                        .presentationCompactAdaptation(.popover)
+                                    }
                             }
 
                             // Time + Favourite row (inside the card)
