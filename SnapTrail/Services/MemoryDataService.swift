@@ -20,7 +20,11 @@ final class MemoryDataService {
     }
 
     func fetchFavourites() throws -> [Memory] {
-        try fetchAll().filter { $0.isFavourite }
+        let descriptor = FetchDescriptor<Memory>(
+            predicate: #Predicate { $0.isFavourite },
+            sortBy: [SortDescriptor(\.dateTime, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor)
     }
 
     func search(
@@ -30,36 +34,30 @@ final class MemoryDataService {
         toDate: Date? = nil,
         favouriteOnly: Bool = false
     ) throws -> [Memory] {
-        let memories = try fetchAll()
+        let from = fromDate ?? Date.distantPast
+        let to = toDate ?? Date.distantFuture
 
-        return memories.filter { memory in
-            let matchesKeyword =
-                keyword.isEmpty ||
-                memory.locationName.localizedCaseInsensitiveContains(keyword) ||
-                memory.caption.localizedCaseInsensitiveContains(keyword)
+        let descriptor = FetchDescriptor<Memory>(
+            predicate: #Predicate { memory in
+                (keyword.isEmpty ||
+                 memory.locationName.localizedStandardContains(keyword) ||
+                 memory.caption.localizedStandardContains(keyword))
+                &&
+                (!favouriteOnly || memory.isFavourite)
+                &&
+                (memory.dateTime >= from && memory.dateTime <= to)
+            },
+            sortBy: [SortDescriptor(\.dateTime, order: .reverse)]
+        )
 
-            let matchesCategory =
-                category == nil ||
-                memory.category?.id == category?.id
+        var results = try modelContext.fetch(descriptor)
 
-            let matchesFromDate =
-                fromDate == nil ||
-                memory.dateTime >= fromDate!
-
-            let matchesToDate =
-                toDate == nil ||
-                memory.dateTime <= toDate!
-
-            let matchesFavourite =
-                !favouriteOnly ||
-                memory.isFavourite
-
-            return matchesKeyword &&
-                   matchesCategory &&
-                   matchesFromDate &&
-                   matchesToDate &&
-                   matchesFavourite
+        // Category filter kept in Swift because #Predicate can't traverse optional relationships
+        if let category {
+            results = results.filter { $0.category?.id == category.id }
         }
+
+        return results
     }
 
     func save(_ memory: Memory) throws {

@@ -166,12 +166,18 @@ struct SaveMemoryView: View {
                 HStack {
                     // Location badge
                     HStack(spacing: 6) {
-                        Image(systemName: "mappin.circle.fill")
+                        if isFetchingLocation {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color.snapAccent))
+                                .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "mappin.circle.fill")
+                                .font(.caption)
+                                .foregroundColor(Color.snapAccent)
+                        }
+                        Text(isFetchingLocation ? "Fetching location..." : viewModel.locationName)
                             .font(.caption)
-                            .foregroundColor(Color.snapAccent)
-                        Text(viewModel.locationName)
-                            .font(.caption)
-                            .foregroundColor(.snapTextPrimary)
+                            .foregroundColor(isFetchingLocation ? .snapTextSecondary : .snapTextPrimary)
                             .lineLimit(1)
                     }
                     .padding(.horizontal, 12)
@@ -283,6 +289,7 @@ struct SaveMemoryView: View {
     }
 
     private func fetchLocation() {
+        isFetchingLocation = true   // ← explicitly set true at the start
         Task {
             do {
                 let location = try await locationService.getCurrentLocation()
