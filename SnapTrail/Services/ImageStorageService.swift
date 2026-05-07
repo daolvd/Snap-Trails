@@ -19,12 +19,17 @@ enum ImageStorageService {
             withIntermediateDirectories: true
         )
 
-        let fileName = UUID().uuidString + ".jpg"
-        let fileURL = memoriesDirectory.appendingPathComponent(fileName)
-
         guard let imageData = image.jpegData(compressionQuality: 0.85) else {
             throw AppError.imageSaveFailed
         }
+
+        let maxSizeBytes = 50 * 1024 * 1024
+        guard imageData.count <= maxSizeBytes else {
+            throw AppError.imageTooLarge
+        }
+
+        let fileName = UUID().uuidString + ".jpg"
+        let fileURL = memoriesDirectory.appendingPathComponent(fileName)
 
         do {
             try imageData.write(to: fileURL, options: [.atomic])

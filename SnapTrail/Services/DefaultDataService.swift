@@ -21,29 +21,13 @@ final class DefaultDataService {
             let existing = try categoryDataService.fetchAll()
 
             if existing.isEmpty {
-                try categoryDataService.create(
-                    name: "Study",
-                    iconName: "book.fill",
-                    colorName: "green"
-                )
-
-                try categoryDataService.create(
-                    name: "Food",
-                    iconName: "fork.knife",
-                    colorName: "green"
-                )
-
-                try categoryDataService.create(
-                    name: "Travel",
-                    iconName: "airplane",
-                    colorName: "green"
-                )
-
-                try categoryDataService.create(
-                    name: "Daily Life",
-                    iconName: "sun.max.fill",
-                    colorName: "green"
-                )
+                for config in DefaultCategoryConfig.load() {
+                    try categoryDataService.create(
+                        name: config.name,
+                        iconName: config.iconName,
+                        colorName: config.colorName
+                    )
+                }
             }
 
             UserDefaults.standard.set(

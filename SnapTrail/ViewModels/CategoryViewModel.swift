@@ -5,6 +5,8 @@ import Combine
 final class CategoryViewModel: ObservableObject {
     @Published var categories: [MemoryCategory] = []
     @Published var newCategoryName: String = ""
+    @Published var selectedIcon: CategoryIcon = .tag
+    @Published var selectedColor: CategoryColor = .green
     @Published var errorMessage: String?
 
     private let categoryDataService: CategoryDataService
@@ -26,10 +28,12 @@ final class CategoryViewModel: ObservableObject {
         do {
             try categoryDataService.create(
                 name: newCategoryName,
-                iconName: "tag.fill",
-                colorName: "green"
+                iconName: selectedIcon.rawValue,
+                colorName: selectedColor.rawValue
             )
             newCategoryName = ""
+            selectedIcon = .tag
+            selectedColor = .green
             fetchCategories()
         } catch {
             errorMessage = error.localizedDescription

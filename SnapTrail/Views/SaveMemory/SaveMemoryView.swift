@@ -200,15 +200,27 @@ struct SaveMemoryView: View {
             }
 
             // Caption input overlaid at the bottom of the image
-            TextField("Add a field note...", text: $viewModel.caption)
-                .font(.subheadline)
-                .foregroundColor(.snapTextPrimary)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(.ultraThinMaterial)
-                .clipShape(Capsule())
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            VStack(alignment: .trailing, spacing: 4) {
+                TextField("Add a field note...", text: $viewModel.caption)
+                    .font(.subheadline)
+                    .foregroundColor(.snapTextPrimary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+
+                if let warning = viewModel.captionWarning {
+                    Text(warning)
+                        .font(.caption2)
+                        .foregroundColor(
+                            viewModel.captionCharacterCount >= SaveMemoryViewModel.captionMaxLength
+                            ? .red : .orange
+                        )
+                        .padding(.horizontal, 8)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
     }
 
@@ -263,24 +275,45 @@ struct SaveMemoryView: View {
 
             // Create new category — only shown when toggled
             if showNewTagField {
-                HStack(spacing: 8) {
-                    TextField("New tag name", text: $categoryVM.newCategoryName)
-                        .font(.subheadline)
-                        .foregroundColor(.snapTextPrimary)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(Color.snapCard)
-                        .cornerRadius(12)
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        TextField("New tag name", text: $categoryVM.newCategoryName)
+                            .font(.subheadline)
+                            .foregroundColor(.snapTextPrimary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(Color.snapCard)
+                            .cornerRadius(12)
 
-                    Button {
-                        categoryVM.createCategory()
-                        showNewTagField = false
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(Color.snapAccent)
+                        Button {
+                            categoryVM.createCategory()
+                            showNewTagField = false
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(Color.snapAccent)
+                        }
+                        .disabled(categoryVM.newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
-                    .disabled(categoryVM.newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    // Icon picker
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(CategoryIcon.allCases) { icon in
+                                Button {
+                                    categoryVM.selectedIcon = icon
+                                } label: {
+                                    Image(systemName: icon.rawValue)
+                                        .font(.body)
+                                        .foregroundColor(categoryVM.selectedIcon == icon ? .black : .snapTextSecondary)
+                                        .frame(width: 36, height: 36)
+                                        .background(categoryVM.selectedIcon == icon ? Color.snapAccent : Color.snapCard)
+                                        .clipShape(Circle())
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 2)
+                    }
                 }
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

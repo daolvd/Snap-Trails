@@ -38,7 +38,7 @@ final class TimelineViewModel: ObservableObject {
 
     func toggleFavourite(_ memory: Memory) {
         do {
-            try memoryDataService.toggleFavourite(memory)
+            try memoryDataService.setFavourite(memory, to: !memory.isFavourite)
             fetchMemories()
         } catch {
             errorMessage = error.localizedDescription

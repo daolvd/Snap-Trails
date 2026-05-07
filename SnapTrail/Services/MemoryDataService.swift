@@ -82,13 +82,17 @@ final class MemoryDataService {
         }
     }
 
-    func toggleFavourite(_ memory: Memory) throws {
-        memory.isFavourite.toggle()
+    func setFavourite(_ memory: Memory, to value: Bool) throws {
+        memory.isFavourite = value
 
         do {
             try modelContext.save()
         } catch {
             throw AppError.memorySaveFailed
         }
+    }
+
+    func toggleFavourite(_ memory: Memory) throws {
+        try setFavourite(memory, to: !memory.isFavourite)
     }
 }
