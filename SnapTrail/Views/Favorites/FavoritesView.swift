@@ -4,9 +4,10 @@ import SwiftData
 struct FavoritesView: View {
     @ObservedObject var viewModel: FavoritesViewModel
     @Environment(\.dismiss) private var dismiss
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ZStack {
                 Color.snapBackground.ignoresSafeArea()
 
@@ -45,12 +46,8 @@ struct FavoritesView: View {
                                 // Grid layout matching design
                                 if let first = viewModel.favourites.first {
                                     // Featured card
-                                    NavigationLink {
-                                        MemoryDetailView(
-                                            memories: viewModel.favourites,
-                                            initialIndex: 0,
-                                            memoryDataService: viewModel.memoryDataService
-                                        )
+                                    Button {
+                                        pushDetail(index: 0)
                                     } label: {
                                         featuredCard(
                                             memory: first,
@@ -74,12 +71,8 @@ struct FavoritesView: View {
                                                 where: { $0.id == memory.id }
                                             ) ?? 0
 
-                                            NavigationLink {
-                                                MemoryDetailView(
-                                                    memories: viewModel.favourites,
-                                                    initialIndex: memoryIndex,
-                                                    memoryDataService: viewModel.memoryDataService
-                                                )
+                                            Button {
+                                                pushDetail(index: memoryIndex)
                                             } label: {
                                                 gridCard(
                                                     memory: memory,
@@ -101,6 +94,13 @@ struct FavoritesView: View {
                         }
                     }
                 }
+            }
+            .navigationDestination(for: Int.self) { index in
+                MemoryDetailView(
+                    memories: viewModel.favourites,
+                    initialIndex: index,
+                    memoryDataService: viewModel.memoryDataService
+                )
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -124,6 +124,11 @@ struct FavoritesView: View {
                 viewModel.fetchFavourites()
             }
         }
+    }
+
+    private func pushDetail(index: Int) {
+        guard path.isEmpty else { return }
+        path.append(index)
     }
 
     private func featuredCard(memory: Memory, width: CGFloat, height: CGFloat) -> some View {
