@@ -3,6 +3,7 @@ import SwiftData
 
 struct FavoritesView: View {
     @ObservedObject var viewModel: FavoritesViewModel
+    let categoryDataService: CategoryDataService
     @Environment(\.dismiss) private var dismiss
     @State private var path = NavigationPath()
 
@@ -99,7 +100,8 @@ struct FavoritesView: View {
                 MemoryDetailView(
                     memories: viewModel.favourites,
                     initialIndex: index,
-                    memoryDataService: viewModel.memoryDataService
+                    memoryDataService: viewModel.memoryDataService,
+                    categoryDataService: categoryDataService
                 )
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -187,7 +189,8 @@ struct FavoritesView: View {
     FavoritesView(
         viewModel: FavoritesViewModel(
             memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
-        )
+        ),
+        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
     )
     .modelContainer(PreviewContainer.shared)
 }

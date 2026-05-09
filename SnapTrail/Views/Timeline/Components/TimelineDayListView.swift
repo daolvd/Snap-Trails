@@ -5,6 +5,7 @@ struct TimelineDayListView: View {
     let yearGroups: [TimelineYearGroup]
     let allMemories: [Memory]
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
     let onToggleFavourite: (Memory) -> Void
 
     var body: some View {
@@ -18,6 +19,7 @@ struct TimelineDayListView: View {
                                     group: monthGroup,
                                     allMemories: allMemories,
                                     memoryDataService: memoryDataService,
+                                    categoryDataService: categoryDataService,
                                     onToggleFavourite: onToggleFavourite
                                 )
                             }
@@ -42,6 +44,7 @@ struct TimelineDayListView: View {
                 yearGroups: TimelinePreviewData.yearGroups,
                 allMemories: TimelinePreviewData.memories,
                 memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
                 onToggleFavourite: { _ in }
             )
         }

@@ -14,6 +14,7 @@ protocol MemoryDataServiceProtocol {
     func delete(_ memory: Memory) throws
     func setFavourite(_ memory: Memory, to value: Bool) throws
     func toggleFavourite(_ memory: Memory) throws
+    func update(_ memory: Memory) throws
 }
 
 extension MemoryDataService: MemoryDataServiceProtocol {}

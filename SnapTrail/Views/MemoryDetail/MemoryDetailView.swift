@@ -9,21 +9,28 @@ struct MemoryDetailView: View {
     @State private var localMemories: [Memory]
     let initialIndex: Int
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
 
     @Environment(\.dismiss) private var dismiss
     @State private var hasScrolledToInitial = false
     /// Tracks the index of the page currently visible on screen.
     @State private var currentIndex: Int = 0
 
-    init(memories: [Memory], initialIndex: Int, memoryDataService: MemoryDataService) {
+    init(
+        memories: [Memory],
+        initialIndex: Int,
+        memoryDataService: MemoryDataService,
+        categoryDataService: CategoryDataService
+    ) {
         _localMemories = State(initialValue: memories)
         self.initialIndex = initialIndex
         self.memoryDataService = memoryDataService
+        self.categoryDataService = categoryDataService
     }
 
     /// Convenience init for single memory
-    init(memory: Memory, memoryDataService: MemoryDataService) {
-        self.init(memories: [memory], initialIndex: 0, memoryDataService: memoryDataService)
+    init(memory: Memory, memoryDataService: MemoryDataService, categoryDataService: CategoryDataService) {
+        self.init(memories: [memory], initialIndex: 0, memoryDataService: memoryDataService, categoryDataService: categoryDataService)
     }
 
     var body: some View {
@@ -45,6 +52,7 @@ struct MemoryDetailView: View {
                                 MemoryDetailItemView(
                                     memory: memory,
                                     memoryDataService: memoryDataService,
+                                    categoryDataService: categoryDataService,
                                     onDelete: {
                                         deleteMemory(memory, proxy: proxy)
                                     }
@@ -128,7 +136,8 @@ struct MemoryDetailView: View {
         MemoryDetailView(
             memories: [PreviewContainer.sampleMemory],
             initialIndex: 0,
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
+            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+            categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
         )
     }
     .modelContainer(PreviewContainer.shared)

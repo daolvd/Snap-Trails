@@ -5,6 +5,7 @@ struct TimelineMonthListView: View {
     let yearGroups: [TimelineYearGroup]
     let allMemories: [Memory]
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
 
     private let columns = [
         GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 14, alignment: .top)
@@ -20,7 +21,8 @@ struct TimelineMonthListView: View {
                                 TimelineMonthCard(
                                     group: monthGroup,
                                     allMemories: allMemories,
-                                    memoryDataService: memoryDataService
+                                    memoryDataService: memoryDataService,
+                                    categoryDataService: categoryDataService
                                 )
                             }
                         }
@@ -43,7 +45,8 @@ struct TimelineMonthListView: View {
             TimelineMonthListView(
                 yearGroups: TimelinePreviewData.yearGroups,
                 allMemories: TimelinePreviewData.memories,
-                memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
+                memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
             )
         }
     }

@@ -3,6 +3,7 @@ import SwiftData
 
 struct TimelineView: View {
     @ObservedObject var viewModel: TimelineViewModel
+    let categoryDataService: CategoryDataService
     @State private var showSearch = false
     @State private var displayMode: TimelineDisplayMode = .day
 
@@ -46,10 +47,9 @@ struct TimelineView: View {
                 SearchView(
                     viewModel: SearchViewModel(
                         memoryDataService: viewModel.memoryDataService,
-                        categoryDataService: CategoryDataService(
-                            modelContext: viewModel.memoryDataService.modelContext
-                        )
-                    )
+                        categoryDataService: categoryDataService
+                    ),
+                    categoryDataService: categoryDataService
                 )
             }
             .onAppear {
@@ -71,19 +71,22 @@ struct TimelineView: View {
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
                 memoryDataService: viewModel.memoryDataService,
+                categoryDataService: categoryDataService,
                 onToggleFavourite: viewModel.toggleFavourite
             )
         case .month:
             TimelineMonthListView(
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
-                memoryDataService: viewModel.memoryDataService
+                memoryDataService: viewModel.memoryDataService,
+                categoryDataService: categoryDataService
             )
         case .year:
             TimelineYearListView(
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
-                memoryDataService: viewModel.memoryDataService
+                memoryDataService: viewModel.memoryDataService,
+                categoryDataService: categoryDataService
             )
         }
     }
@@ -93,7 +96,8 @@ struct TimelineView: View {
     TimelineView(
         viewModel: TimelineViewModel(
             memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
-        )
+        ),
+        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
     )
     .modelContainer(PreviewContainer.shared)
 }

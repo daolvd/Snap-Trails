@@ -7,15 +7,23 @@ import SwiftData
 struct MemoryDetailItemView: View {
     let memory: Memory
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
     let onDelete: () -> Void
 
     @StateObject private var viewModel: MemoryDetailViewModel
     @State private var showDeleteConfirmation = false
     @State private var showFullCaption = false
+    @State private var showEditSheet = false
 
-    init(memory: Memory, memoryDataService: MemoryDataService, onDelete: @escaping () -> Void) {
+    init(
+        memory: Memory,
+        memoryDataService: MemoryDataService,
+        categoryDataService: CategoryDataService,
+        onDelete: @escaping () -> Void
+    ) {
         self.memory = memory
         self.memoryDataService = memoryDataService
+        self.categoryDataService = categoryDataService
         self.onDelete = onDelete
         _viewModel = StateObject(wrappedValue: MemoryDetailViewModel(
             memory: memory,
@@ -67,16 +75,30 @@ struct MemoryDetailItemView: View {
 
                                 Spacer()
 
-                                // Delete button
-                                Button {
-                                    showDeleteConfirmation = true
-                                } label: {
-                                    Image(systemName: "trash.fill")
-                                        .font(.body)
-                                        .foregroundColor(.snapTextPrimary)
-                                        .frame(width: 40, height: 40)
-                                        .background(.ultraThinMaterial)
-                                        .clipShape(Circle())
+                                HStack(spacing: 10) {
+                                    // Edit button
+                                    Button {
+                                        showEditSheet = true
+                                    } label: {
+                                        Image(systemName: "pencil")
+                                            .font(.body)
+                                            .foregroundColor(.snapTextPrimary)
+                                            .frame(width: 40, height: 40)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Circle())
+                                    }
+
+                                    // Delete button
+                                    Button {
+                                        showDeleteConfirmation = true
+                                    } label: {
+                                        Image(systemName: "trash.fill")
+                                            .font(.body)
+                                            .foregroundColor(.snapTextPrimary)
+                                            .frame(width: 40, height: 40)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Circle())
+                                    }
                                 }
                             }
                             .padding(16)
@@ -219,6 +241,14 @@ struct MemoryDetailItemView: View {
             }
         }
         .animation(.spring(duration: 0.4), value: viewModel.saveToastMessage)
+        .sheet(isPresented: $showEditSheet) {
+            EditMemoryView(
+                memory: memory,
+                memoryDataService: memoryDataService,
+                categoryDataService: categoryDataService,
+                onSave: {}
+            )
+        }
         .confirmationDialog(
             "Delete Memory",
             isPresented: $showDeleteConfirmation,
@@ -238,6 +268,7 @@ struct MemoryDetailItemView: View {
     MemoryDetailItemView(
         memory: PreviewContainer.sampleMemory,
         memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
         onDelete: {
             print("Delete requested in preview")
         }

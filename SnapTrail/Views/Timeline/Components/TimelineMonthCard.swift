@@ -5,6 +5,7 @@ struct TimelineMonthCard: View {
     let group: TimelineMonthGroup
     let allMemories: [Memory]
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
 
     var body: some View {
         let monthMemories = group.days.flatMap { $0.memories }
@@ -18,7 +19,8 @@ struct TimelineMonthCard: View {
                 MemoryDetailView(
                     memories: allMemories,
                     initialIndex: firstIndex,
-                    memoryDataService: memoryDataService
+                    memoryDataService: memoryDataService,
+                    categoryDataService: categoryDataService
                 )
             }
         } label: {
@@ -50,12 +52,14 @@ struct TimelineMonthCard: View {
                 TimelineMonthCard(
                     group: TimelinePreviewData.monthGroup,
                     allMemories: TimelinePreviewData.memories,
-                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
+                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                    categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
                 )
                 TimelineMonthCard(
                     group: TimelinePreviewData.monthGroup,
                     allMemories: TimelinePreviewData.memories,
-                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
+                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                    categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
                 )
             }
             .padding()
