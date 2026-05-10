@@ -6,6 +6,7 @@ struct TimelineDaySection: View {
     let isLast: Bool
     let allMemories: [Memory]
     let memoryDataService: MemoryDataService
+    let categoryDataService: CategoryDataService
     let onToggleFavourite: (Memory) -> Void
 
     var body: some View {
@@ -44,7 +45,8 @@ struct TimelineDaySection: View {
                         MemoryDetailView(
                             memories: allMemories,
                             initialIndex: allMemories.firstIndex(where: { $0.id == memory.id }) ?? 0,
-                            memoryDataService: memoryDataService
+                            memoryDataService: memoryDataService,
+                            categoryDataService: categoryDataService
                         )
                     } label: {
                         MemoryCardView(memory: memory) {
@@ -77,6 +79,7 @@ struct TimelineDaySection: View {
                         isLast: false,
                         allMemories: TimelinePreviewData.memories,
                         memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
                         onToggleFavourite: { _ in }
                     )
                     TimelineDaySection(
@@ -88,6 +91,7 @@ struct TimelineDaySection: View {
                         isLast: true,
                         allMemories: TimelinePreviewData.memories,
                         memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
+                        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
                         onToggleFavourite: { _ in }
                     )
                 }

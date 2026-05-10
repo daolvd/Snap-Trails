@@ -95,4 +95,13 @@ final class MemoryDataService {
     func toggleFavourite(_ memory: Memory) throws {
         try setFavourite(memory, to: !memory.isFavourite)
     }
+    
+    /// Persists any in-place mutations made to a Memory object.
+    func update(_ memory: Memory) throws {
+        do {
+            try modelContext.save()
+        } catch {
+            throw AppError.memorySaveFailed
+        }
+    }
 }

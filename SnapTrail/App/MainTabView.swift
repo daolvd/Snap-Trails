@@ -8,7 +8,8 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             TimelineView(
-                viewModel: TimelineViewModel(memoryDataService: memoryDataService)
+                viewModel: TimelineViewModel(memoryDataService: memoryDataService),
+                categoryDataService: categoryDataService
             )
             .tabItem {
                 Label("Timeline", systemImage: "house.fill")
@@ -24,7 +25,8 @@ struct MainTabView: View {
 
             ProfileView(
                 viewModel: SettingsViewModel(),
-                memoryDataService: memoryDataService
+                memoryDataService: memoryDataService,
+                categoryDataService: categoryDataService
             )
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
