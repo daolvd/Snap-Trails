@@ -111,8 +111,14 @@ struct FavoritesView: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
+                            .font(.body.weight(.semibold))
                             .foregroundColor(.snapTextSecondary)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 8)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Close")
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Text("SnapTrail")
