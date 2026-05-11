@@ -35,7 +35,6 @@ Maya takes hundreds of photos every month from cafés, hikes, classes and short 
 
 - **Capture flow** — take a photo with the in-app camera; location and reverse-geocoded place name are attached automatically.
 - **Timeline** — memories grouped by **Year / Month / Day** with section headers.
-- **Map view** — every memory pinned on a map for spatial recall.
 - **Search & filter** — full-text caption search plus filters by category, date range and favourites (uses SwiftData `#Predicate`).
 - **Categories** — user-managed tags (Study, Food, Travel, …) with custom names.
 - **Favourites** — mark and revisit your best memories.
