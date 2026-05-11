@@ -24,7 +24,8 @@ final class CategoryViewModel: ObservableObject {
         }
     }
 
-    func createCategory() {
+    @discardableResult
+    func createCategory() -> Bool {
         do {
             try categoryDataService.create(
                 name: newCategoryName,
@@ -34,9 +35,12 @@ final class CategoryViewModel: ObservableObject {
             newCategoryName = ""
             selectedIcon = .tag
             selectedColor = Color(hex: "#AEFF00")
+            errorMessage = nil
             fetchCategories()
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
