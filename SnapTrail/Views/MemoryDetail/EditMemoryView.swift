@@ -81,6 +81,9 @@ struct EditMemoryView: View {
             }
             .toolbarBackground(Color.snapBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
+            .onAppear {
+                categoryVM.fetchCategories()
+            }
             .onChange(of: viewModel.didSave) { _, saved in
                 if saved {
                     onSave()
