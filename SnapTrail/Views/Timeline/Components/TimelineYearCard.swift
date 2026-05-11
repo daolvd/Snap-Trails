@@ -9,20 +9,16 @@ struct TimelineYearCard: View {
 
     var body: some View {
         let yearMemories = group.months.flatMap { $0.days.flatMap { $0.memories } }
-        let firstMemory = yearMemories.first
-        let firstIndex = firstMemory.flatMap { m in
-            allMemories.firstIndex(where: { $0.id == m.id })
-        } ?? 0
 
         NavigationLink {
-            if firstMemory != nil {
-                MemoryDetailView(
-                    memories: allMemories,
-                    initialIndex: firstIndex,
-                    memoryDataService: memoryDataService,
-                    categoryDataService: categoryDataService
-                )
-            }
+            // CHANGED: navigates to TimelineYearDetailView (months grid)
+            // instead of jumping straight into MemoryDetailView (photo scroll)
+            TimelineYearDetailView(
+                yearGroup: group,
+                allMemories: allMemories,
+                memoryDataService: memoryDataService,
+                categoryDataService: categoryDataService
+            )
         } label: {
             VStack(alignment: .leading, spacing: 0) {
                 TimelineThumbnailCollage(memories: yearMemories)

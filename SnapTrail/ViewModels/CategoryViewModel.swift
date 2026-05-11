@@ -6,7 +6,7 @@ final class CategoryViewModel: ObservableObject {
     @Published var categories: [MemoryCategory] = []
     @Published var newCategoryName: String = ""
     @Published var selectedIcon: CategoryIcon = .tag
-    @Published var selectedColor: CategoryColor = .green
+    @Published var selectedColor: Color = Color(hex: "#AEFF00")
     @Published var errorMessage: String?
 
     private let categoryDataService: CategoryDataService
@@ -29,11 +29,11 @@ final class CategoryViewModel: ObservableObject {
             try categoryDataService.create(
                 name: newCategoryName,
                 iconName: selectedIcon.rawValue,
-                colorName: selectedColor.rawValue
+                colorName: selectedColor.toHex
             )
             newCategoryName = ""
             selectedIcon = .tag
-            selectedColor = .green
+            selectedColor = Color(hex: "#AEFF00")
             fetchCategories()
         } catch {
             errorMessage = error.localizedDescription

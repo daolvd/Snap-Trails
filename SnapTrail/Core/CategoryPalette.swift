@@ -29,16 +29,3 @@ enum CategoryIcon: String, CaseIterable, Identifiable {
         }
     }
 }
-
-enum CategoryColor: String, CaseIterable, Identifiable {
-    case green  = "green"
-    case blue   = "blue"
-    case orange = "orange"
-    case yellow = "yellow"
-    case red    = "red"
-    case purple = "purple"
-    case pink   = "pink"
-    case teal   = "teal"
-
-    var id: String { rawValue }
-}

@@ -16,6 +16,7 @@ struct ProfileView: View {
 
     @StateObject private var vm: ProfileViewModel
     @State private var showFavourites = false
+    @State private var showCategories = false
     @State private var pickerItem: PhotosPickerItem?
 
     init(
@@ -39,6 +40,7 @@ struct ProfileView: View {
                         profileHeader
                             .padding(.top, 24)
                         statsSection
+                        categoriesCard
                         reminderCard
                         Spacer(minLength: 40)
                     }
@@ -60,6 +62,12 @@ struct ProfileView: View {
                 FavoritesView(
                     viewModel: FavoritesViewModel(memoryDataService: memoryDataService),
                     categoryDataService: categoryDataService
+                )
+            }
+            .sheet(isPresented: $showCategories) {
+                CategoryManagementView(
+                    categoryDataService: categoryDataService,
+                    memoryDataService: memoryDataService
                 )
             }
             .alert("Error", isPresented: .constant(settingsViewModel.errorMessage != nil)) {
@@ -247,6 +255,40 @@ struct ProfileView: View {
                     lineWidth: accent ? 1.5 : 1
                 )
         )
+    }
+
+    // MARK: - Categories card
+
+    private var categoriesCard: some View {
+        Button { showCategories = true } label: {
+            DarkCard {
+                HStack(spacing: 14) {
+                    Image(systemName: "tag.fill")
+                        .font(.subheadline)
+                        .foregroundColor(Color.snapAccent)
+                        .padding(8)
+                        .background(Color.snapAccent.opacity(0.15))
+                        .clipShape(Circle())
+
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Manage Categories")
+                            .font(.headline)
+                            .foregroundColor(.snapTextPrimary)
+                        Text("Create, edit, and organise your tags")
+                            .font(.caption)
+                            .foregroundColor(.snapTextSecondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline)
+                        .foregroundColor(.snapTextSecondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Daily reminder card

@@ -3,13 +3,13 @@ import Foundation
 struct DefaultCategoryConfig: Codable {
     let name: String
     let iconName: String
-    let colorName: String
+    let colorName: String   // stored as hex string e.g. "#4DA8FF"
 
     static let defaults: [DefaultCategoryConfig] = [
-        DefaultCategoryConfig(name: "Study",      iconName: "book.fill",    colorName: "blue"),
-        DefaultCategoryConfig(name: "Food",        iconName: "fork.knife",   colorName: "orange"),
-        DefaultCategoryConfig(name: "Travel",      iconName: "airplane",     colorName: "green"),
-        DefaultCategoryConfig(name: "Daily Life",  iconName: "sun.max.fill", colorName: "yellow"),
+        DefaultCategoryConfig(name: "Study",      iconName: "book.fill",    colorName: "#4DA8FF"),
+        DefaultCategoryConfig(name: "Food",        iconName: "fork.knife",   colorName: "#FF9433"),
+        DefaultCategoryConfig(name: "Travel",      iconName: "airplane",     colorName: "#2ECC70"),
+        DefaultCategoryConfig(name: "Daily Life",  iconName: "sun.max.fill", colorName: "#FFD700"),
     ]
 
     static func load() -> [DefaultCategoryConfig] {

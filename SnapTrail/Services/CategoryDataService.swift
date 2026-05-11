@@ -55,6 +55,41 @@ final class CategoryDataService {
         }
     }
 
+    /// Updates the name, icon, and colour of an existing category.
+    func update(
+        _ category: MemoryCategory,
+        name: String,
+        iconName: String,
+        colorName: String
+    ) throws {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedName.isEmpty else {
+            throw AppError.invalidCategoryName
+        }
+
+        // Duplicate check — exclude the category being edited itself
+        let existing = try fetchAll()
+        let duplicated = existing.contains {
+            $0.id != category.id &&
+            $0.name.lowercased() == trimmedName.lowercased()
+        }
+
+        guard !duplicated else {
+            throw AppError.duplicatedCategory
+        }
+
+        category.name = trimmedName
+        category.iconName = iconName
+        category.colorName = colorName
+
+        do {
+            try modelContext.save()
+        } catch {
+            throw AppError.memorySaveFailed
+        }
+    }
+
     func delete(_ category: MemoryCategory) throws {
         modelContext.delete(category)
 
