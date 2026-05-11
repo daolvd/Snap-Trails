@@ -11,8 +11,7 @@ import PhotosUI
 
 struct ProfileView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     @StateObject private var vm: ProfileViewModel
     @State private var showFavourites = false
@@ -21,13 +20,14 @@ struct ProfileView: View {
 
     init(
         viewModel: SettingsViewModel,
-        memoryDataService: MemoryDataService,
-        categoryDataService: CategoryDataService
+        services: AppServices
     ) {
         self.settingsViewModel = viewModel
-        self.memoryDataService = memoryDataService
-        self.categoryDataService = categoryDataService
-        _vm = StateObject(wrappedValue: ProfileViewModel(memoryDataService: memoryDataService))
+        self.services = services
+        _vm = StateObject(wrappedValue: ProfileViewModel(
+            memoryDataService: services.memoryDataService,
+            userProfileService: services.userProfileService
+        ))
     }
 
     var body: some View {
@@ -60,15 +60,12 @@ struct ProfileView: View {
             .onAppear { vm.refreshStats() }
             .sheet(isPresented: $showFavourites) {
                 FavoritesView(
-                    viewModel: FavoritesViewModel(memoryDataService: memoryDataService),
-                    categoryDataService: categoryDataService
+                    viewModel: FavoritesViewModel(memoryDataService: services.memoryDataService),
+                    services: services
                 )
             }
             .sheet(isPresented: $showCategories) {
-                CategoryManagementView(
-                    categoryDataService: categoryDataService,
-                    memoryDataService: memoryDataService
-                )
+                CategoryManagementView(services: services)
             }
             .alert("Error", isPresented: .constant(settingsViewModel.errorMessage != nil)) {
                 Button("OK") { settingsViewModel.errorMessage = nil }
@@ -314,10 +311,10 @@ struct ProfileView: View {
 }
 
 #Preview {
+    let services = AppServices(modelContext: PreviewContainer.context)
     ProfileView(
-        viewModel: SettingsViewModel(),
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+        viewModel: SettingsViewModel(notificationService: services.notificationService),
+        services: services
     )
     .modelContainer(PreviewContainer.shared)
 }

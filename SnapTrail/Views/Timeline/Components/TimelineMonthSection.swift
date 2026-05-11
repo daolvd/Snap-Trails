@@ -4,8 +4,7 @@ import SwiftData
 struct TimelineMonthSection: View {
     let group: TimelineMonthGroup
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onToggleFavourite: (Memory) -> Void
 
     var body: some View {
@@ -19,8 +18,7 @@ struct TimelineMonthSection: View {
                     group: dayGroup,
                     isLast: index == group.days.count - 1,
                     allMemories: allMemories,
-                    memoryDataService: memoryDataService,
-                    categoryDataService: categoryDataService,
+                    services: services,
                     onToggleFavourite: onToggleFavourite
                 )
             }
@@ -36,8 +34,7 @@ struct TimelineMonthSection: View {
                 TimelineMonthSection(
                     group: TimelinePreviewData.monthGroup,
                     allMemories: TimelinePreviewData.memories,
-                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                    categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+                    services: AppServices(modelContext: PreviewContainer.context),
                     onToggleFavourite: { _ in }
                 )
                 .padding()

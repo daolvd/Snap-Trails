@@ -90,7 +90,10 @@ final class CategoryDataService {
         }
     }
 
+    /// Idempotent: deleting an already-removed category is a no-op.
     func delete(_ category: MemoryCategory) throws {
+        guard category.modelContext != nil else { return }
+
         modelContext.delete(category)
 
         do {

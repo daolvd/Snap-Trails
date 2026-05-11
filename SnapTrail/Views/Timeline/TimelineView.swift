@@ -3,7 +3,7 @@ import SwiftData
 
 struct TimelineView: View {
     @ObservedObject var viewModel: TimelineViewModel
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     @State private var showSearch = false
     @State private var displayMode: TimelineDisplayMode = .day
 
@@ -46,10 +46,10 @@ struct TimelineView: View {
             .sheet(isPresented: $showSearch) {
                 SearchView(
                     viewModel: SearchViewModel(
-                        memoryDataService: viewModel.memoryDataService,
-                        categoryDataService: categoryDataService
+                        memoryDataService: services.memoryDataService,
+                        categoryDataService: services.categoryDataService
                     ),
-                    categoryDataService: categoryDataService
+                    services: services
                 )
             }
             .onAppear {
@@ -70,34 +70,30 @@ struct TimelineView: View {
             TimelineDayListView(
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
-                memoryDataService: viewModel.memoryDataService,
-                categoryDataService: categoryDataService,
+                services: services,
                 onToggleFavourite: viewModel.toggleFavourite
             )
         case .month:
             TimelineMonthListView(
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
-                memoryDataService: viewModel.memoryDataService,
-                categoryDataService: categoryDataService
+                services: services
             )
         case .year:
             TimelineYearListView(
                 yearGroups: viewModel.groupedMemories,
                 allMemories: viewModel.memories,
-                memoryDataService: viewModel.memoryDataService,
-                categoryDataService: categoryDataService
+                services: services
             )
         }
     }
 }
 
 #Preview {
+    let services = AppServices(modelContext: PreviewContainer.context)
     TimelineView(
-        viewModel: TimelineViewModel(
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
-        ),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+        viewModel: TimelineViewModel(memoryDataService: services.memoryDataService),
+        services: services
     )
     .modelContainer(PreviewContainer.shared)
 }

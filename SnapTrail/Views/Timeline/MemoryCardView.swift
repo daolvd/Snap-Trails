@@ -12,7 +12,7 @@ struct MemoryCardView: View {
 
             // Info
             VStack(alignment: .leading, spacing: 4) {
-                Text(memory.locationName)
+                Text(memory.displayLocationName)
                     .font(.headline)
                     .foregroundColor(.snapTextPrimary)
                     .lineLimit(1)
@@ -57,15 +57,11 @@ struct MemoryCardView: View {
                 onFavouriteTap: {}
             )
             MemoryCardView(
-                memory: {
-                    let m = Memory(
-                        imageFileName: "test.jpg",
-                        locationName: "Central Station",
-                        latitude: 0, longitude: 0,
-                        caption: "Morning commute"
-                    )
-                    return m
-                }(),
+                memory: Memory(
+                    imageFileName: "test.jpg",
+                    location: GeoLocation(latitude: -33.88, longitude: 151.21, name: "Central Station"),
+                    caption: "Morning commute"
+                ),
                 onFavouriteTap: {}
             )
         }

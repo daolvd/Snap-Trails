@@ -11,34 +11,39 @@ import CoreLocation
 
 struct SaveMemoryView: View {
     let image: UIImage
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onDismiss: () -> Void
 
     @StateObject private var viewModel: SaveMemoryViewModel
     @StateObject private var categoryVM: CategoryViewModel
-    @StateObject private var locationService = LocationService()
 
     @State private var currentLocation: CLLocation?
     @State private var isFetchingLocation = true
     @State private var showNewTagField = false
     @State private var showSuccess = false
 
-    private let geocodingService = GeocodingService()
+    private let locationService: LocationServiceProtocol
+    private let geocodingService: GeocodingServiceProtocol
 
     init(
         image: UIImage,
-        memoryDataService: MemoryDataService,
-        categoryDataService: CategoryDataService,
+        services: AppServices,
         onDismiss: @escaping () -> Void
     ) {
         self.image = image
-        self.memoryDataService = memoryDataService
-        self.categoryDataService = categoryDataService
+        self.services = services
         self.onDismiss = onDismiss
 
-        _viewModel = StateObject(wrappedValue: SaveMemoryViewModel(memoryDataService: memoryDataService))
-        _categoryVM = StateObject(wrappedValue: CategoryViewModel(categoryDataService: categoryDataService))
+        self.locationService = services.makeLocationService()
+        self.geocodingService = services.geocodingService
+
+        _viewModel = StateObject(wrappedValue: SaveMemoryViewModel(
+            memoryDataService: services.memoryDataService,
+            imageStorage: services.imageStorage
+        ))
+        _categoryVM = StateObject(wrappedValue: CategoryViewModel(
+            categoryDataService: services.categoryDataService
+        ))
     }
 
     var body: some View {
@@ -175,7 +180,7 @@ struct SaveMemoryView: View {
                                 .font(.caption)
                                 .foregroundColor(Color.snapAccent)
                         }
-                        Text(isFetchingLocation ? "Fetching location..." : viewModel.locationName)
+                        Text(isFetchingLocation ? "Fetching location..." : viewModel.displayLocationName)
                             .font(.caption)
                             .foregroundColor(isFetchingLocation ? .snapTextSecondary : .snapTextPrimary)
                             .lineLimit(1)
@@ -213,7 +218,7 @@ struct SaveMemoryView: View {
                     Text(warning)
                         .font(.caption2)
                         .foregroundColor(
-                            viewModel.captionCharacterCount >= SaveMemoryViewModel.captionMaxLength
+                            viewModel.captionCharacterCount >= viewModel.captionMaxLength
                             ? .red : .orange
                         )
                         .padding(.horizontal, 8)
@@ -322,15 +327,21 @@ struct SaveMemoryView: View {
     }
 
     private func fetchLocation() {
-        isFetchingLocation = true   // ← explicitly set true at the start
+        isFetchingLocation = true
         Task {
             do {
                 let location = try await locationService.getCurrentLocation()
                 currentLocation = location
-                let name = await geocodingService.reverseGeocode(location: location)
-                viewModel.locationName = name
+                viewModel.locationName = await geocodingService.reverseGeocode(location: location)
+            } catch let error as AppError {
+                AppLog.warning(
+                    "Location fetch failed: \(error.localizedDescription)",
+                    category: .location
+                )
+                viewModel.locationName = nil
             } catch {
-                viewModel.locationName = "Location unavailable"
+                AppLog.error("Unexpected location error", category: .location, error: error)
+                viewModel.locationName = nil
             }
             isFetchingLocation = false
         }
@@ -343,8 +354,7 @@ struct SaveMemoryView: View {
 
     SaveMemoryView(
         image: previewImage,
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+        services: AppServices(modelContext: PreviewContainer.context),
         onDismiss: {}
     )
     .modelContainer(PreviewContainer.shared)

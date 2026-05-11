@@ -13,8 +13,7 @@ import SwiftData
 struct TimelineYearDetailView: View {
     let yearGroup: TimelineYearGroup
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     private let columns = [
         GridItem(.adaptive(minimum: 150, maximum: 240), spacing: 14, alignment: .top)
@@ -31,15 +30,13 @@ struct TimelineYearDetailView: View {
                             TimelineMonthDetailView(
                                 monthGroup: monthGroup,
                                 allMemories: allMemories,
-                                memoryDataService: memoryDataService,
-                                categoryDataService: categoryDataService
+                                services: services,
                             )
                         } label: {
                             TimelineMonthCard(
                                 group: monthGroup,
                                 allMemories: allMemories,
-                                memoryDataService: memoryDataService,
-                                categoryDataService: categoryDataService
+                                services: services,
                             )
                         }
                         .buttonStyle(.plain)
@@ -62,8 +59,7 @@ struct TimelineYearDetailView: View {
         TimelineYearDetailView(
             yearGroup: TimelinePreviewData.yearGroup,
             allMemories: TimelinePreviewData.memories,
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-            categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+            services: AppServices(modelContext: PreviewContainer.context),
         )
     }
     .modelContainer(PreviewContainer.shared)

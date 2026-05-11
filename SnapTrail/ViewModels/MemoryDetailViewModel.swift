@@ -12,11 +12,17 @@ final class MemoryDetailViewModel: ObservableObject {
     @Published var saveToastMessage: String?
     @Published var saveToastIsError: Bool = false
 
-    private let memoryDataService: MemoryDataService
+    private let memoryDataService: MemoryDataServiceProtocol
+    private let imageStorage: ImageStorageServiceProtocol
 
-    init(memory: Memory, memoryDataService: MemoryDataService) {
+    init(
+        memory: Memory,
+        memoryDataService: MemoryDataServiceProtocol,
+        imageStorage: ImageStorageServiceProtocol = ImageStorageService.live
+    ) {
         self.memory = memory
         self.memoryDataService = memoryDataService
+        self.imageStorage = imageStorage
     }
 
     func toggleFavourite() {
@@ -43,11 +49,10 @@ final class MemoryDetailViewModel: ObservableObject {
     /// Saves the memory's image to the device Photo Library.
     /// Requests add-only permission if not yet granted, shows a toast for feedback.
     func saveImageToPhotos() {
-        // Haptic feedback on long press
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
 
-        guard let uiImage = ImageStorageService.loadImage(fileName: memory.imageFileName) else {
+        guard let uiImage = imageStorage.loadImage(fileName: memory.imageFileName) else {
             showToast("Image not found", isError: true)
             return
         }
@@ -65,7 +70,11 @@ final class MemoryDetailViewModel: ObservableObject {
                                 self.showToast("Saved to Photos", isError: false)
                             } else {
                                 self.showToast("Save failed", isError: true)
-                                print("Save to Photos error: \(error?.localizedDescription ?? "unknown")")
+                                AppLog.error(
+                                    "Save to Photos failed",
+                                    category: .storage,
+                                    error: error
+                                )
                             }
                         }
                     }
@@ -78,7 +87,6 @@ final class MemoryDetailViewModel: ObservableObject {
         }
     }
 
-    /// Shows a temporary toast message that auto-dismisses after 2 seconds
     private func showToast(_ message: String, isError: Bool) {
         saveToastIsError = isError
         saveToastMessage = message

@@ -5,8 +5,7 @@ struct TimelineDaySection: View {
     let group: TimelineDayGroup
     let isLast: Bool
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onToggleFavourite: (Memory) -> Void
 
     var body: some View {
@@ -45,8 +44,7 @@ struct TimelineDaySection: View {
                         MemoryDetailView(
                             memories: allMemories,
                             initialIndex: allMemories.firstIndex(where: { $0.id == memory.id }) ?? 0,
-                            memoryDataService: memoryDataService,
-                            categoryDataService: categoryDataService
+                            services: services,
                         )
                     } label: {
                         MemoryCardView(memory: memory) {
@@ -78,8 +76,7 @@ struct TimelineDaySection: View {
                         group: TimelinePreviewData.dayGroup,
                         isLast: false,
                         allMemories: TimelinePreviewData.memories,
-                        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+                        services: AppServices(modelContext: PreviewContainer.context),
                         onToggleFavourite: { _ in }
                     )
                     TimelineDaySection(
@@ -90,8 +87,7 @@ struct TimelineDaySection: View {
                         ),
                         isLast: true,
                         allMemories: TimelinePreviewData.memories,
-                        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+                        services: AppServices(modelContext: PreviewContainer.context),
                         onToggleFavourite: { _ in }
                     )
                 }

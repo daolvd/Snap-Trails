@@ -1,31 +1,43 @@
 import Foundation
 import UserNotifications
 
-final class NotificationService {
-    static let shared = NotificationService()
+protocol NotificationServiceProtocol {
+    func requestPermission() async -> Bool
+    func getAuthorizationStatus() async -> UNAuthorizationStatus
+    func scheduleDailyReminder(hour: Int, minute: Int)
+    func cancelReminder()
+}
 
-    private init() {}
+extension NotificationServiceProtocol {
+    func scheduleDailyReminder() {
+        scheduleDailyReminder(
+            hour: AppConstants.defaultReminderHour,
+            minute: AppConstants.defaultReminderMinute
+        )
+    }
+}
+
+final class NotificationService: NotificationServiceProtocol {
+    private let center: UNUserNotificationCenter
+
+    init(center: UNUserNotificationCenter = .current()) {
+        self.center = center
+    }
 
     func requestPermission() async -> Bool {
         do {
-            return try await UNUserNotificationCenter.current()
-                .requestAuthorization(options: [.alert, .sound, .badge])
+            return try await center.requestAuthorization(options: [.alert, .sound, .badge])
         } catch {
             return false
         }
     }
 
     func getAuthorizationStatus() async -> UNAuthorizationStatus {
-        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        let settings = await center.notificationSettings()
         return settings.authorizationStatus
     }
 
-    func scheduleDailyReminder(
-        hour: Int = AppConstants.defaultReminderHour,
-        minute: Int = AppConstants.defaultReminderMinute
-    ) {
-        let center = UNUserNotificationCenter.current()
-
+    func scheduleDailyReminder(hour: Int, minute: Int) {
         center.removePendingNotificationRequests(
             withIdentifiers: [AppConstants.dailyReminderIdentifier]
         )
@@ -54,9 +66,8 @@ final class NotificationService {
     }
 
     func cancelReminder() {
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(
-                withIdentifiers: [AppConstants.dailyReminderIdentifier]
-            )
+        center.removePendingNotificationRequests(
+            withIdentifiers: [AppConstants.dailyReminderIdentifier]
+        )
     }
 }

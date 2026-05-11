@@ -6,8 +6,7 @@ import SwiftData
 /// Supports long-press gesture to save the photo to the device's Photo Library.
 struct MemoryDetailItemView: View {
     let memory: Memory
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onDelete: () -> Void
 
     @StateObject private var viewModel: MemoryDetailViewModel
@@ -17,17 +16,16 @@ struct MemoryDetailItemView: View {
 
     init(
         memory: Memory,
-        memoryDataService: MemoryDataService,
-        categoryDataService: CategoryDataService,
+        services: AppServices,
         onDelete: @escaping () -> Void
     ) {
         self.memory = memory
-        self.memoryDataService = memoryDataService
-        self.categoryDataService = categoryDataService
+        self.services = services
         self.onDelete = onDelete
         _viewModel = StateObject(wrappedValue: MemoryDetailViewModel(
             memory: memory,
-            memoryDataService: memoryDataService
+            memoryDataService: services.memoryDataService,
+            imageStorage: services.imageStorage
         ))
     }
 
@@ -62,7 +60,7 @@ struct MemoryDetailItemView: View {
                                     Image(systemName: "mappin.circle.fill")
                                         .font(.caption)
                                         .foregroundColor(Color.snapAccent)
-                                    Text(memory.locationName.uppercased())
+                                    Text(memory.displayLocationName.uppercased())
                                         .font(.caption)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.snapTextPrimary)
@@ -244,8 +242,7 @@ struct MemoryDetailItemView: View {
         .sheet(isPresented: $showEditSheet) {
             EditMemoryView(
                 memory: memory,
-                memoryDataService: memoryDataService,
-                categoryDataService: categoryDataService,
+                services: services,
                 onSave: {}
             )
         }
@@ -267,8 +264,7 @@ struct MemoryDetailItemView: View {
 #Preview {
     MemoryDetailItemView(
         memory: PreviewContainer.sampleMemory,
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+        services: AppServices(modelContext: PreviewContainer.context),
         onDelete: {
             print("Delete requested in preview")
         }

@@ -14,11 +14,10 @@ struct CategoryManagementView: View {
     @StateObject private var viewModel: CategoryManagementViewModel
     @Environment(\.dismiss) private var dismiss
 
-    init(categoryDataService: CategoryDataService,
-         memoryDataService: MemoryDataService) {
+    init(services: AppServices) {
         _viewModel = StateObject(wrappedValue: CategoryManagementViewModel(
-            categoryDataService: categoryDataService,
-            memoryDataService: memoryDataService
+            categoryDataService: services.categoryDataService,
+            memoryDataService: services.memoryDataService
         ))
     }
 
@@ -430,11 +429,8 @@ struct CategoryFormSheet: View {
 // MARK: - Previews
 
 #Preview("Management") {
-    CategoryManagementView(
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
-    )
-    .modelContainer(PreviewContainer.shared)
+    CategoryManagementView(services: AppServices(modelContext: PreviewContainer.context))
+        .modelContainer(PreviewContainer.shared)
 }
 
 #Preview("Form") {

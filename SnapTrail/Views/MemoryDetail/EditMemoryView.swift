@@ -5,8 +5,7 @@ import SwiftData
 /// caption, location name, date/time, and category tag.
 struct EditMemoryView: View {
     let memory: Memory
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onSave: () -> Void
 
     @StateObject private var viewModel: EditMemoryViewModel
@@ -18,20 +17,20 @@ struct EditMemoryView: View {
 
     init(
         memory: Memory,
-        memoryDataService: MemoryDataService,
-        categoryDataService: CategoryDataService,
+        services: AppServices,
         onSave: @escaping () -> Void
     ) {
         self.memory = memory
-        self.memoryDataService = memoryDataService
-        self.categoryDataService = categoryDataService
+        self.services = services
         self.onSave = onSave
         _viewModel = StateObject(wrappedValue: EditMemoryViewModel(
             memory: memory,
-            memoryDataService: memoryDataService
+            memoryDataService: services.memoryDataService,
+            locationService: services.makeLocationService(),
+            geocodingService: services.geocodingService
         ))
         _categoryVM = StateObject(wrappedValue: CategoryViewModel(
-            categoryDataService: categoryDataService
+            categoryDataService: services.categoryDataService
         ))
     }
 
@@ -138,7 +137,7 @@ struct EditMemoryView: View {
                     Text(warning)
                         .font(.caption2)
                         .foregroundColor(
-                            viewModel.captionCharacterCount >= EditMemoryViewModel.captionMaxLength
+                            viewModel.captionCharacterCount >= viewModel.captionMaxLength
                                 ? .red : .orange
                         )
                         .padding(.horizontal, 4)
@@ -389,8 +388,7 @@ struct EditMemoryView: View {
 #Preview {
     EditMemoryView(
         memory: PreviewContainer.sampleMemory,
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+        services: AppServices(modelContext: PreviewContainer.context),
         onSave: {}
     )
     .modelContainer(PreviewContainer.shared)

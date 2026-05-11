@@ -4,8 +4,7 @@ import SwiftData
 struct TimelineYearCard: View {
     let group: TimelineYearGroup
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     var body: some View {
         let yearMemories = group.months.flatMap { $0.days.flatMap { $0.memories } }
@@ -16,8 +15,7 @@ struct TimelineYearCard: View {
             TimelineYearDetailView(
                 yearGroup: group,
                 allMemories: allMemories,
-                memoryDataService: memoryDataService,
-                categoryDataService: categoryDataService
+                services: services,
             )
         } label: {
             VStack(alignment: .leading, spacing: 0) {
@@ -72,8 +70,7 @@ struct TimelineYearCard: View {
                 TimelineYearCard(
                     group: TimelinePreviewData.yearGroup,
                     allMemories: TimelinePreviewData.memories,
-                    memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                    categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+                    services: AppServices(modelContext: PreviewContainer.context),
                 )
                 .padding()
             }

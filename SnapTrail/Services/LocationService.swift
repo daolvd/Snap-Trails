@@ -3,7 +3,13 @@ import Combine
 import Foundation
 
 @MainActor
-final class LocationService: NSObject, ObservableObject {
+protocol LocationServiceProtocol: AnyObject {
+    func getCurrentLocation() async throws -> CLLocation
+    func requestPermission()
+}
+
+@MainActor
+final class LocationService: NSObject, ObservableObject, LocationServiceProtocol {
     @Published var currentLocation: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var isLoadingLocation: Bool = false
@@ -11,14 +17,13 @@ final class LocationService: NSObject, ObservableObject {
 
     private let manager = CLLocationManager()
     private var continuation: CheckedContinuation<CLLocation, Error>?
+    private var pendingPermissionContinuation: CheckedContinuation<CLLocation, Error>?
 
     override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
-
-    private var pendingPermissionContinuation: CheckedContinuation<CLLocation, Error>?
 
     func requestPermission() {
         manager.requestWhenInUseAuthorization()
@@ -30,7 +35,6 @@ final class LocationService: NSObject, ObservableObject {
 
         switch manager.authorizationStatus {
         case .notDetermined:
-            // Don't throw immediately — store the continuation and wait
             return try await withCheckedThrowingContinuation { continuation in
                 self.pendingPermissionContinuation = continuation
                 manager.requestWhenInUseAuthorization()
@@ -60,13 +64,11 @@ extension LocationService: CLLocationManagerDelegate {
         Task { @MainActor in
             self.authorizationStatus = manager.authorizationStatus
 
-            // Resume the pending permission wait if the user just granted access
             if let pending = self.pendingPermissionContinuation {
                 switch manager.authorizationStatus {
                 case .authorizedWhenInUse, .authorizedAlways:
                     self.pendingPermissionContinuation = nil
                     self.isLoadingLocation = true
-                    // Now actually request the location
                     self.continuation = pending
                     manager.requestLocation()
                 case .denied, .restricted:

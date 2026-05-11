@@ -2,31 +2,26 @@ import SwiftUI
 import SwiftData
 
 struct MainTabView: View {
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     var body: some View {
         TabView {
             TimelineView(
-                viewModel: TimelineViewModel(memoryDataService: memoryDataService),
-                categoryDataService: categoryDataService
+                viewModel: TimelineViewModel(memoryDataService: services.memoryDataService),
+                services: services
             )
             .tabItem {
                 Label("Timeline", systemImage: "house.fill")
             }
 
-            CameraView(
-                memoryDataService: memoryDataService,
-                categoryDataService: categoryDataService
-            )
-            .tabItem {
-                Label("Capture", systemImage: "camera.fill")
-            }
+            CameraView(services: services)
+                .tabItem {
+                    Label("Capture", systemImage: "camera.fill")
+                }
 
             ProfileView(
-                viewModel: SettingsViewModel(),
-                memoryDataService: memoryDataService,
-                categoryDataService: categoryDataService
+                viewModel: SettingsViewModel(notificationService: services.notificationService),
+                services: services
             )
             .tabItem {
                 Label("Profile", systemImage: "person.fill")
@@ -37,9 +32,6 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView(
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
-    )
-    .modelContainer(PreviewContainer.shared)
+    MainTabView(services: AppServices(modelContext: PreviewContainer.context))
+        .modelContainer(PreviewContainer.shared)
 }
