@@ -89,6 +89,11 @@ struct EditMemoryView: View {
                     dismiss()
                 }
             }
+            .onChange(of: categoryVM.newCategoryName) { _, _ in
+                if categoryVM.errorMessage != nil {
+                    categoryVM.errorMessage = nil
+                }
+            }
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") { viewModel.errorMessage = nil }
             } message: {
@@ -276,8 +281,9 @@ struct EditMemoryView: View {
                             .cornerRadius(12)
 
                         Button {
-                            categoryVM.createCategory()
-                            showNewTagField = false
+                            if categoryVM.createCategory() {
+                                showNewTagField = false
+                            }
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
@@ -287,6 +293,16 @@ struct EditMemoryView: View {
                             categoryVM.newCategoryName
                                 .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         )
+                    }
+
+                    if let msg = categoryVM.errorMessage {
+                        HStack {
+                            Text(msg)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
                     }
 
                     ScrollView(.horizontal, showsIndicators: false) {

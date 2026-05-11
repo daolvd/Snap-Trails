@@ -91,7 +91,9 @@ struct SaveMemoryView: View {
                                 systemName: "checkmark",
                                 size: 64,
                                 foreground: .black,
-                                background: Color.snapAccent
+                                background: viewModel.isCaptionValid
+                                    ? Color.snapAccent
+                                    : Color.snapAccent.opacity(0.4)
                             ) {
                                 let success = viewModel.saveMemory(
                                     image: image,
@@ -101,6 +103,7 @@ struct SaveMemoryView: View {
                                     showSuccess = true
                                 }
                             }
+                            .disabled(!viewModel.isCaptionValid || viewModel.isSaving)
                         }
                         .padding(.horizontal, 40)
                         .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? 16 : 30)
@@ -147,10 +150,10 @@ struct SaveMemoryView: View {
             } message: {
                 Text("Memory has been uploaded successfully!")
             }
-            .alert("Error", isPresented: .constant(categoryVM.errorMessage != nil)) {
-                Button("OK") { categoryVM.errorMessage = nil }
-            } message: {
-                Text(categoryVM.errorMessage ?? "")
+            .onChange(of: categoryVM.newCategoryName) { _, _ in
+                if categoryVM.errorMessage != nil {
+                    categoryVM.errorMessage = nil
+                }
             }
         }
     }
@@ -291,14 +294,25 @@ struct SaveMemoryView: View {
                             .cornerRadius(12)
 
                         Button {
-                            categoryVM.createCategory()
-                            showNewTagField = false
+                            if categoryVM.createCategory() {
+                                showNewTagField = false
+                            }
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title2)
                                 .foregroundColor(Color.snapAccent)
                         }
                         .disabled(categoryVM.newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+
+                    if let msg = categoryVM.errorMessage {
+                        HStack {
+                            Text(msg)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
                     }
 
                     // Icon picker
