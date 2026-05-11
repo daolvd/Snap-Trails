@@ -45,17 +45,13 @@ struct CategoryManagementView: View {
                         .foregroundColor(.snapTextPrimary)
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
+                    Button { dismiss() } label: {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.snapTextSecondary)
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        viewModel.openCreateSheet()
-                    } label: {
+                    Button { viewModel.openCreateSheet() } label: {
                         Image(systemName: "plus")
                             .foregroundColor(Color.snapAccent)
                             .fontWeight(.semibold)
@@ -65,7 +61,6 @@ struct CategoryManagementView: View {
             .toolbarBackground(Color.snapBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .onAppear { viewModel.fetchCategories() }
-            // Create sheet
             .sheet(isPresented: $viewModel.isShowingCreateSheet) {
                 CategoryFormSheet(
                     title: "New Category",
@@ -78,7 +73,6 @@ struct CategoryManagementView: View {
                     onCancel: { viewModel.isShowingCreateSheet = false }
                 )
             }
-            // Edit sheet
             .sheet(item: $viewModel.editingCategory) { _ in
                 CategoryFormSheet(
                     title: "Edit Category",
@@ -91,7 +85,6 @@ struct CategoryManagementView: View {
                     onCancel: { viewModel.cancelEdit() }
                 )
             }
-            // Delete confirmation
             .confirmationDialog(
                 deleteTitle,
                 isPresented: .init(
@@ -100,16 +93,11 @@ struct CategoryManagementView: View {
                 ),
                 titleVisibility: .visible
             ) {
-                Button("Delete Category", role: .destructive) {
-                    viewModel.executeDelete()
-                }
-                Button("Cancel", role: .cancel) {
-                    viewModel.cancelDelete()
-                }
+                Button("Delete Category", role: .destructive) { viewModel.executeDelete() }
+                Button("Cancel", role: .cancel) { viewModel.cancelDelete() }
             } message: {
                 Text(deleteMessage)
             }
-            // Error alert
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") { viewModel.errorMessage = nil }
             } message: {
@@ -118,18 +106,16 @@ struct CategoryManagementView: View {
         }
     }
 
-    // MARK: - Category list
+    // MARK: - List
 
     private var categoryList: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Summary header
                 summaryHeader
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 20)
 
-                // Category rows
                 VStack(spacing: 12) {
                     ForEach(viewModel.categories) { category in
                         CategoryRow(
@@ -150,18 +136,10 @@ struct CategoryManagementView: View {
 
     private var summaryHeader: some View {
         HStack(spacing: 12) {
-            summaryTile(
-                value: "\(viewModel.categories.count)",
-                label: "Categories",
-                icon: "tag.fill",
-                color: Color.snapAccent
-            )
-            summaryTile(
-                value: "\(totalSnaps)",
-                label: "Total Snaps",
-                icon: "photo.fill",
-                color: Color(red: 0.20, green: 0.60, blue: 1.00)
-            )
+            summaryTile(value: "\(viewModel.categories.count)", label: "Categories",
+                        icon: "tag.fill", color: Color.snapAccent)
+            summaryTile(value: "\(totalSnaps)", label: "Total Snaps",
+                        icon: "photo.fill", color: Color(hex: "#4DA8FF"))
         }
     }
 
@@ -187,22 +165,18 @@ struct CategoryManagementView: View {
         .padding(14)
         .background(Color.snapCard)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .stroke(Color.white.opacity(0.06), lineWidth: 1))
         .frame(maxWidth: .infinity)
     }
 
     // MARK: - Helpers
 
-    private var totalSnaps: Int {
-        viewModel.snapCounts.values.reduce(0, +)
-    }
+    private var totalSnaps: Int { viewModel.snapCounts.values.reduce(0, +) }
 
     private var deleteTitle: String {
         guard let cat = viewModel.categoryToDelete else { return "Delete Category" }
-        return "Delete "\(cat.name)"?"
+        return "Delete \"\(cat.name)\"?"
     }
 
     private var deleteMessage: String {
@@ -224,13 +198,10 @@ private struct CategoryRow: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
 
-    private var accentColor: Color {
-        CategoryColor.color(for: category.colorName)
-    }
+    private var accentColor: Color { Color(hex: category.colorName) }
 
     var body: some View {
         HStack(spacing: 14) {
-            // Colour + icon badge
             ZStack {
                 Circle()
                     .fill(accentColor.opacity(0.18))
@@ -240,7 +211,6 @@ private struct CategoryRow: View {
                     .foregroundColor(accentColor)
             }
 
-            // Name + snap count
             VStack(alignment: .leading, spacing: 4) {
                 Text(category.name)
                     .font(.headline)
@@ -256,7 +226,6 @@ private struct CategoryRow: View {
 
             Spacer()
 
-            // Action buttons
             HStack(spacing: 4) {
                 Button(action: onEdit) {
                     Image(systemName: "pencil")
@@ -266,13 +235,12 @@ private struct CategoryRow: View {
                         .background(Color.snapCardLight)
                         .clipShape(Circle())
                 }
-
                 Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.subheadline)
-                        .foregroundColor(Color(red: 1, green: 0.3, blue: 0.3))
+                        .foregroundColor(Color(hex: "#FF4D4D"))
                         .frame(width: 36, height: 36)
-                        .background(Color(red: 1, green: 0.3, blue: 0.3).opacity(0.12))
+                        .background(Color(hex: "#FF4D4D").opacity(0.12))
                         .clipShape(Circle())
                 }
             }
@@ -280,10 +248,8 @@ private struct CategoryRow: View {
         .padding(16)
         .background(Color.snapCard)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-        )
+        .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .stroke(Color.white.opacity(0.06), lineWidth: 1))
     }
 }
 
@@ -295,7 +261,7 @@ struct CategoryFormSheet: View {
 
     @Binding var name: String
     @Binding var icon: CategoryIcon
-    @Binding var color: CategoryColor
+    @Binding var color: Color
 
     let isValid: Bool
     let onConfirm: () -> Void
@@ -309,7 +275,7 @@ struct CategoryFormSheet: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
 
-                        // Name field
+                        // Name
                         formSection(label: "Name") {
                             HStack {
                                 TextField("e.g. Travel, Food, Study…", text: $name)
@@ -326,10 +292,8 @@ struct CategoryFormSheet: View {
                             .padding(.vertical, 14)
                             .background(Color.snapCard)
                             .cornerRadius(14)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                            )
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1))
                         }
 
                         // Icon picker
@@ -339,9 +303,7 @@ struct CategoryFormSheet: View {
                                 spacing: 10
                             ) {
                                 ForEach(CategoryIcon.allCases) { item in
-                                    Button {
-                                        icon = item
-                                    } label: {
+                                    Button { icon = item } label: {
                                         VStack(spacing: 6) {
                                             Image(systemName: item.rawValue)
                                                 .font(.system(size: 22))
@@ -349,13 +311,8 @@ struct CategoryFormSheet: View {
                                                 .frame(width: 52, height: 52)
                                                 .background(icon == item ? Color.snapAccent : Color.snapCard)
                                                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                                        .stroke(
-                                                            icon == item ? Color.clear : Color.white.opacity(0.06),
-                                                            lineWidth: 1
-                                                        )
-                                                )
+                                                .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                    .stroke(icon == item ? Color.clear : Color.white.opacity(0.06), lineWidth: 1))
                                             Text(item.displayName)
                                                 .font(.system(size: 10))
                                                 .foregroundColor(icon == item ? Color.snapAccent : .snapTextSecondary)
@@ -366,30 +323,31 @@ struct CategoryFormSheet: View {
                             }
                         }
 
-                        // Colour picker
+                        // Colour — free ColorPicker
                         formSection(label: "Colour") {
-                            LazyVGrid(
-                                columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 8),
-                                spacing: 10
-                            ) {
-                                ForEach(CategoryColor.allCases) { item in
-                                    Button {
-                                        color = item
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(item.color)
-                                                .frame(width: 36, height: 36)
-                                            if color == item {
-                                                Image(systemName: "checkmark")
-                                                    .font(.system(size: 14, weight: .bold))
-                                                    .foregroundColor(.black)
-                                            }
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
+                            HStack(spacing: 14) {
+                                ColorPicker("", selection: $color, supportsOpacity: false)
+                                    .labelsHidden()
+                                    .scaleEffect(1.2)
+
+                                Text("Tap to choose any colour")
+                                    .font(.subheadline)
+                                    .foregroundColor(.snapTextSecondary)
+
+                                Spacer()
+
+                                // Small swatch preview
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 32, height: 32)
+                                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(Color.snapCard)
+                            .cornerRadius(14)
+                            .overlay(RoundedRectangle(cornerRadius: 14)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1))
                         }
 
                         // Live preview
@@ -397,11 +355,11 @@ struct CategoryFormSheet: View {
                             HStack(spacing: 14) {
                                 ZStack {
                                     Circle()
-                                        .fill(color.color.opacity(0.18))
+                                        .fill(color.opacity(0.18))
                                         .frame(width: 52, height: 52)
                                     Image(systemName: icon.rawValue)
                                         .font(.system(size: 22))
-                                        .foregroundColor(color.color)
+                                        .foregroundColor(color)
                                 }
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(name.isEmpty ? "Category Name" : name)
@@ -416,10 +374,8 @@ struct CategoryFormSheet: View {
                             .padding(16)
                             .background(Color.snapCard)
                             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
-                            )
+                            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 1))
                         }
                     }
                     .padding(.horizontal, 20)
@@ -481,7 +437,7 @@ struct CategoryFormSheet: View {
         confirmLabel: "Create",
         name: .constant("Travel"),
         icon: .constant(.travel),
-        color: .constant(.teal),
+        color: .constant(Color(hex: "#2ECC70")),
         isValid: true,
         onConfirm: {},
         onCancel: {}

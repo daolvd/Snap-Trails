@@ -1,6 +1,6 @@
 [
-  { "name": "Study",      "iconName": "book.fill",    "colorName": "blue"   },
-  { "name": "Food",       "iconName": "fork.knife",   "colorName": "orange" },
-  { "name": "Travel",     "iconName": "airplane",     "colorName": "green"  },
-  { "name": "Daily Life", "iconName": "sun.max.fill", "colorName": "yellow" }
+  { "name": "Study",      "iconName": "book.fill",    "colorName": "#4DA8FF" },
+  { "name": "Food",       "iconName": "fork.knife",   "colorName": "#FF9433" },
+  { "name": "Travel",     "iconName": "airplane",     "colorName": "#2ECC70" },
+  { "name": "Daily Life", "iconName": "sun.max.fill", "colorName": "#FFD700" }
 ]

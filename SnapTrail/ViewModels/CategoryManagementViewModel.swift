@@ -8,9 +8,6 @@
 import SwiftUI
 import Combine
 
-/// View model powering the full category management screen.
-/// Supports listing, creating, editing, and deleting categories,
-/// plus surfacing the memory count for each category.
 @MainActor
 final class CategoryManagementViewModel: ObservableObject {
 
@@ -21,12 +18,12 @@ final class CategoryManagementViewModel: ObservableObject {
     // MARK: - Create / Edit form state
     @Published var formName: String = ""
     @Published var formIcon: CategoryIcon = .tag
-    @Published var formColor: CategoryColor = .green
+    @Published var formColor: Color = Color(hex: "#AEFF00")
 
     // MARK: - UI state
     @Published var isShowingCreateSheet = false
-    @Published var editingCategory: MemoryCategory? = nil   // non-nil → edit sheet open
-    @Published var categoryToDelete: MemoryCategory? = nil  // non-nil → delete confirm
+    @Published var editingCategory: MemoryCategory? = nil
+    @Published var categoryToDelete: MemoryCategory? = nil
     @Published var errorMessage: String? = nil
 
     private let categoryDataService: CategoryDataService
@@ -67,7 +64,7 @@ final class CategoryManagementViewModel: ObservableObject {
     func openCreateSheet() {
         formName = ""
         formIcon = .tag
-        formColor = .green
+        formColor = Color(hex: "#AEFF00")
         isShowingCreateSheet = true
     }
 
@@ -76,7 +73,7 @@ final class CategoryManagementViewModel: ObservableObject {
             try categoryDataService.create(
                 name: formName,
                 iconName: formIcon.rawValue,
-                colorName: formColor.rawValue
+                colorName: formColor.toHex
             )
             isShowingCreateSheet = false
             fetchCategories()
@@ -90,7 +87,7 @@ final class CategoryManagementViewModel: ObservableObject {
     func openEditSheet(for category: MemoryCategory) {
         formName = category.name
         formIcon = CategoryIcon(rawValue: category.iconName) ?? .tag
-        formColor = CategoryColor(rawValue: category.colorName) ?? .green
+        formColor = Color(hex: category.colorName)
         editingCategory = category
     }
 
@@ -101,7 +98,7 @@ final class CategoryManagementViewModel: ObservableObject {
                 category,
                 name: formName,
                 iconName: formIcon.rawValue,
-                colorName: formColor.rawValue
+                colorName: formColor.toHex
             )
             editingCategory = nil
             fetchCategories()
