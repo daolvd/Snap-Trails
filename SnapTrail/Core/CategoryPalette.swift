@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum CategoryIcon: String, CaseIterable, Identifiable {
     case tag       = "tag.fill"
@@ -41,4 +42,9 @@ enum CategoryColor: String, CaseIterable, Identifiable {
     case teal   = "teal"
 
     var id: String { rawValue }
-}
+
+    var color: Color {
+        switch self {
+        case .green:  return Color(red: 0.18, green: 0.80, blue: 0.44)
+        case .blue:   return Color(red: 0.20, green: 0.60, blue: 1.00)
+        case .orange: return Color(red: 1.00, green:
