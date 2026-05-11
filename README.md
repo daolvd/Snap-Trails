@@ -35,7 +35,6 @@ Maya takes hundreds of photos every month from cafés, hikes, classes and short 
 
 - **Capture flow** — take a photo with the in-app camera; location and reverse-geocoded place name are attached automatically.
 - **Timeline** — memories grouped by **Year / Month / Day** with section headers.
-- **Map view** — every memory pinned on a map for spatial recall.
 - **Search & filter** — full-text caption search plus filters by category, date range and favourites (uses SwiftData `#Predicate`).
 - **Categories** — user-managed tags (Study, Food, Travel, …) with custom names.
 - **Favourites** — mark and revisit your best memories.
@@ -55,7 +54,6 @@ The project demonstrates how several first-party Apple frameworks combine to sol
 | **SwiftUI** | All `Views/` | Declarative UI, navigation, state binding |
 | **SwiftData** | `Models/Memory.swift`, `Models/MemoryCategory.swift`, `Services/*DataService.swift` | On-device persistence with `@Model`, `@Attribute(.unique)`, `@Relationship`, `#Predicate` |
 | **Core Location** | `Services/LocationService.swift` | Acquiring the user's coordinates at capture time |
-| **MapKit** | Map view of memories | Rendering memory pins on a map |
 | **AVFoundation** | `Views/Camera/`, permission checks | Camera capture and authorisation status |
 | **PhotosUI / UIKit interop** | Capture & export flow | Image picking, sharing |
 | **UserNotifications** | `Services/NotificationService.swift` | Local reminder notifications |
@@ -112,7 +110,7 @@ We followed an iterative plan → prototype → test loop across the semester:
 1. **Discover** — interviewed the persona, defined the "lost context of photos" problem.
 2. **Sketch** — low-fi wireframes for capture, timeline, detail and search (see `design/`).
 3. **Prototype v1** — onboarding, capture flow, basic timeline.
-4. **Prototype v2** — search with `#Predicate`, favourites, categories, map view.
+4. **Prototype v2** — search with `#Predicate`, favourites, categories.
 5. **Polish** — profile, export, edit existing memories, redesigned profile page.
 6. **Hardening** — hotfixes for image sizing, padding, navigation overlap and edge cases (see PR history).
 
