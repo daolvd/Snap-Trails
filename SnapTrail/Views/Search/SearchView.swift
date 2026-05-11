@@ -78,6 +78,9 @@ struct SearchView: View {
                                     .foregroundColor(.snapTextSecondary)
 
                                 Button {
+                                    // CHANGED: dismiss the To picker before toggling From picker
+                                    // so both pickers are never on screen at the same time
+                                    showToDatePicker = false
                                     showFromDatePicker.toggle()
                                 } label: {
                                     HStack {
@@ -100,6 +103,9 @@ struct SearchView: View {
                                     .foregroundColor(.snapTextSecondary)
 
                                 Button {
+                                    // CHANGED: dismiss the From picker before toggling To picker
+                                    // so both pickers are never on screen at the same time
+                                    showFromDatePicker = false
                                     showToDatePicker.toggle()
                                 } label: {
                                     HStack {
