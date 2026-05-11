@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 import SwiftData
 
@@ -15,10 +16,10 @@ enum PreviewContainer {
         // Seed sample data
         let ctx = container.mainContext
 
-        let study = MemoryCategory(name: "Study", iconName: "book.fill", colorName: "green")
-        let food = MemoryCategory(name: "Food", iconName: "fork.knife", colorName: "green")
-        let travel = MemoryCategory(name: "Travel", iconName: "airplane", colorName: "green")
-        let daily = MemoryCategory(name: "Daily Life", iconName: "sun.max.fill", colorName: "green")
+        let study = MemoryCategory(name: "Study", iconName: "book.fill", colorName: "#4DA8FF")
+        let food = MemoryCategory(name: "Food", iconName: "fork.knife", colorName: "#FF9433")
+        let travel = MemoryCategory(name: "Travel", iconName: "airplane", colorName: "#2ECC70")
+        let daily = MemoryCategory(name: "Daily Life", iconName: "sun.max.fill", colorName: "#FFD700")
 
         ctx.insert(study)
         ctx.insert(food)
@@ -82,6 +83,7 @@ enum PreviewContainer {
 
     @MainActor
     static var sampleCategory: MemoryCategory {
-        MemoryCategory(name: "Travel", iconName: "airplane", colorName: "green")
+        MemoryCategory(name: "Travel", iconName: "airplane", colorName: "#2ECC70")
     }
 }
+#endif

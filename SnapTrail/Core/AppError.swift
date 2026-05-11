@@ -3,10 +3,13 @@ import Foundation
 enum AppError: LocalizedError {
     case imageSaveFailed
     case imageLoadFailed
+    case imageTooLarge
     case locationUnavailable
+    case invalidCoordinates
     case geocodingFailed
     case memorySaveFailed
     case memoryDeleteFailed
+    case captionTooLong
     case invalidCategoryName
     case duplicatedCategory
     case permissionDenied
@@ -18,14 +21,20 @@ enum AppError: LocalizedError {
             return "Unable to save the photo. Please try again."
         case .imageLoadFailed:
             return "Unable to load this photo."
+        case .imageTooLarge:
+            return "Photo is too large (max 50 MB). Please choose a smaller image."
         case .locationUnavailable:
             return "Location is unavailable. Please check your location permission."
+        case .invalidCoordinates:
+            return "Location coordinates are invalid. Please try again."
         case .geocodingFailed:
             return "Unable to convert this location into a place name."
         case .memorySaveFailed:
             return "Unable to save this memory."
         case .memoryDeleteFailed:
             return "Unable to delete this memory."
+        case .captionTooLong:
+            return "Caption is too long. Please keep it under 1000 characters."
         case .invalidCategoryName:
             return "Category name cannot be empty."
         case .duplicatedCategory:

@@ -18,6 +18,8 @@ final class LocationService: NSObject, ObservableObject {
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
+    private var pendingPermissionContinuation: CheckedContinuation<CLLocation, Error>?
+
     func requestPermission() {
         manager.requestWhenInUseAuthorization()
     }
@@ -28,8 +30,11 @@ final class LocationService: NSObject, ObservableObject {
 
         switch manager.authorizationStatus {
         case .notDetermined:
-            requestPermission()
-            throw AppError.permissionDenied
+            // Don't throw immediately — store the continuation and wait
+            return try await withCheckedThrowingContinuation { continuation in
+                self.pendingPermissionContinuation = continuation
+                manager.requestWhenInUseAuthorization()
+            }
 
         case .restricted, .denied:
             throw AppError.permissionDenied
@@ -54,6 +59,23 @@ extension LocationService: CLLocationManagerDelegate {
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         Task { @MainActor in
             self.authorizationStatus = manager.authorizationStatus
+
+            // Resume the pending permission wait if the user just granted access
+            if let pending = self.pendingPermissionContinuation {
+                switch manager.authorizationStatus {
+                case .authorizedWhenInUse, .authorizedAlways:
+                    self.pendingPermissionContinuation = nil
+                    self.isLoadingLocation = true
+                    // Now actually request the location
+                    self.continuation = pending
+                    manager.requestLocation()
+                case .denied, .restricted:
+                    self.pendingPermissionContinuation = nil
+                    pending.resume(throwing: AppError.permissionDenied)
+                default:
+                    break
+                }
+            }
         }
     }
 

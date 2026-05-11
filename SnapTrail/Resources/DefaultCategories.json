@@ -1,0 +1,6 @@
+[
+  { "name": "Study",      "iconName": "book.fill",    "colorName": "#4DA8FF" },
+  { "name": "Food",       "iconName": "fork.knife",   "colorName": "#FF9433" },
+  { "name": "Travel",     "iconName": "airplane",     "colorName": "#2ECC70" },
+  { "name": "Daily Life", "iconName": "sun.max.fill", "colorName": "#FFD700" }
+]
