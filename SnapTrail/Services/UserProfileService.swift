@@ -1,30 +1,38 @@
 import Foundation
 import UIKit
 
-/// Persists the user's display name and profile photo across sessions.
-/// Name is stored in UserDefaults; the photo is written to the app's
-/// Documents directory as "profile_photo.jpg".
-final class UserProfileService {
+protocol UserProfileServiceProtocol {
+    var displayName: String { get set }
+    func savePhoto(_ image: UIImage)
+    func loadPhoto() -> UIImage?
+    func deletePhoto()
+}
 
-    static let shared = UserProfileService()
-    private init() {}
+final class UserProfileService: UserProfileServiceProtocol {
+    private let defaults: UserDefaults
+    private let fileManager: FileManager
+    private let nameKey: String
+    private let photoFileName: String
 
-    // MARK: - Keys
-
-    private let nameKey = "userProfileName"
-    private let photoFileName = "profile_photo.jpg"
-
-    // MARK: - Name
-
-    var displayName: String {
-        get { UserDefaults.standard.string(forKey: nameKey) ?? "My SnapTrails" }
-        set { UserDefaults.standard.set(newValue, forKey: nameKey) }
+    init(
+        defaults: UserDefaults = .standard,
+        fileManager: FileManager = .default,
+        nameKey: String = AppConstants.userProfileNameKey,
+        photoFileName: String = AppConstants.profilePhotoFileName
+    ) {
+        self.defaults = defaults
+        self.fileManager = fileManager
+        self.nameKey = nameKey
+        self.photoFileName = photoFileName
     }
 
-    // MARK: - Photo
+    var displayName: String {
+        get { defaults.string(forKey: nameKey) ?? "My SnapTrails" }
+        set { defaults.set(newValue, forKey: nameKey) }
+    }
 
     private var photoURL: URL? {
-        FileManager.default
+        fileManager
             .urls(for: .documentDirectory, in: .userDomainMask)
             .first?
             .appendingPathComponent(photoFileName)
@@ -32,18 +40,34 @@ final class UserProfileService {
 
     func savePhoto(_ image: UIImage) {
         guard let url = photoURL,
-              let data = image.jpegData(compressionQuality: 0.85) else { return }
-        try? data.write(to: url, options: .atomic)
+              let data = image.jpegData(compressionQuality: AppConstants.imageCompressionQuality)
+        else { return }
+        do {
+            try data.write(to: url, options: .atomic)
+        } catch {
+            AppLog.error("Failed to save profile photo", category: .storage, error: error)
+        }
     }
 
     func loadPhoto() -> UIImage? {
-        guard let url = photoURL,
-              let data = try? Data(contentsOf: url) else { return nil }
-        return UIImage(data: data)
+        guard let url = photoURL else { return nil }
+        guard fileManager.fileExists(atPath: url.path) else { return nil }
+        do {
+            let data = try Data(contentsOf: url)
+            return UIImage(data: data)
+        } catch {
+            AppLog.error("Failed to load profile photo", category: .storage, error: error)
+            return nil
+        }
     }
 
+    /// Idempotent: deleting a non-existent photo is a no-op.
     func deletePhoto() {
-        guard let url = photoURL else { return }
-        try? FileManager.default.removeItem(at: url)
+        guard let url = photoURL, fileManager.fileExists(atPath: url.path) else { return }
+        do {
+            try fileManager.removeItem(at: url)
+        } catch {
+            AppLog.error("Failed to delete profile photo", category: .storage, error: error)
+        }
     }
 }

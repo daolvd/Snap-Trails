@@ -12,10 +12,13 @@ final class SearchViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var categories: [MemoryCategory] = []
 
-    let memoryDataService: MemoryDataService
-    private let categoryDataService: CategoryDataService
+    let memoryDataService: MemoryDataServiceProtocol
+    private let categoryDataService: CategoryDataServiceProtocol
 
-    init(memoryDataService: MemoryDataService, categoryDataService: CategoryDataService) {
+    init(
+        memoryDataService: MemoryDataServiceProtocol,
+        categoryDataService: CategoryDataServiceProtocol
+    ) {
         self.memoryDataService = memoryDataService
         self.categoryDataService = categoryDataService
     }

@@ -8,24 +8,19 @@ struct RootView: View {
 
     @AppStorage(AppConstants.hasCompletedOnboardingKey)
     private var hasCompletedOnboarding = false
-    
+
     /// Tracks whether required permissions (camera + location) are granted.
     @State private var permissionsGranted = false
 
-    @State private var memoryDataService: MemoryDataService?
-    @State private var categoryDataService: CategoryDataService?
-    @State private var defaultDataService: DefaultDataService?
+    @State private var services: AppServices?
 
     private let locationManager = CLLocationManager()
 
     var body: some View {
         Group {
-            if let memoryDS = memoryDataService, let categoryDS = categoryDataService {
+            if let services {
                 if hasCompletedOnboarding && permissionsGranted {
-                    MainTabView(
-                        memoryDataService: memoryDS,
-                        categoryDataService: categoryDS
-                    )
+                    MainTabView(services: services)
                 } else {
                     OnboardingView {
                         hasCompletedOnboarding = true
@@ -35,18 +30,13 @@ struct RootView: View {
             }
         }
         .onAppear {
-            // Only created once — modelContext is stable after first appear
-            if memoryDataService == nil {
-                let memoryDS = MemoryDataService(modelContext: modelContext)
-                let categoryDS = CategoryDataService(modelContext: modelContext)
-                memoryDataService = memoryDS
-                categoryDataService = categoryDS
-                defaultDataService = DefaultDataService(categoryDataService: categoryDS)
+            if services == nil {
+                services = AppServices(modelContext: modelContext)
             }
             checkPermissions()
         }
         .task {
-            await defaultDataService?.createDefaultCategoriesIfNeeded()
+            await services?.defaultDataService.createDefaultCategoriesIfNeeded()
         }
         .onReceive(NotificationCenter.default.publisher(
             for: UIApplication.willEnterForegroundNotification)

@@ -3,7 +3,7 @@ import SwiftData
 
 struct FavoritesView: View {
     @ObservedObject var viewModel: FavoritesViewModel
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     @Environment(\.dismiss) private var dismiss
     @State private var path = NavigationPath()
 
@@ -25,13 +25,11 @@ struct FavoritesView: View {
                         let gridSpacing: CGFloat = 12
                         let contentWidth = screenWidth - padding * 2
                         let gridItemWidth = (contentWidth - gridSpacing) / 2
-                        // Featured card height is proportional
                         let featuredHeight = min(contentWidth * 0.75, 380)
                         let gridItemHeight = min(gridItemWidth * 0.85, 180)
 
                         ScrollView(showsIndicators: false) {
                             VStack(alignment: .leading, spacing: 16) {
-                                // Header
                                 HStack {
                                     Text("Favorite Memories")
                                         .font(.title)
@@ -44,9 +42,7 @@ struct FavoritesView: View {
                                 }
                                 .padding(.horizontal, 4)
 
-                                // Grid layout matching design
                                 if let first = viewModel.favourites.first {
-                                    // Featured card
                                     Button {
                                         pushDetail(index: 0)
                                     } label: {
@@ -59,7 +55,6 @@ struct FavoritesView: View {
                                     .buttonStyle(.plain)
                                 }
 
-                                // Grid of remaining
                                 let remaining = Array(viewModel.favourites.dropFirst())
                                 let rows = stride(from: 0, to: remaining.count, by: 2).map {
                                     Array(remaining[$0..<min($0 + 2, remaining.count)])
@@ -100,8 +95,7 @@ struct FavoritesView: View {
                 MemoryDetailView(
                     memories: viewModel.favourites,
                     initialIndex: index,
-                    memoryDataService: viewModel.memoryDataService,
-                    categoryDataService: categoryDataService
+                    services: services
                 )
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -146,8 +140,8 @@ struct FavoritesView: View {
                 .clipped()
 
             VStack(alignment: .leading, spacing: 6) {
-                if !memory.locationName.isEmpty {
-                    Text(memory.locationName)
+                if let name = memory.locationName, !name.isEmpty {
+                    Text(name)
                         .font(.caption)
                         .foregroundColor(.snapTextPrimary)
                         .padding(.horizontal, 10)
@@ -192,11 +186,10 @@ struct FavoritesView: View {
 }
 
 #Preview {
+    let services = AppServices(modelContext: PreviewContainer.context)
     FavoritesView(
-        viewModel: FavoritesViewModel(
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context)
-        ),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+        viewModel: FavoritesViewModel(memoryDataService: services.memoryDataService),
+        services: services
     )
     .modelContainer(PreviewContainer.shared)
 }

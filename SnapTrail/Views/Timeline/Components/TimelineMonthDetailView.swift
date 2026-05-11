@@ -13,8 +13,7 @@ import SwiftData
 struct TimelineMonthDetailView: View {
     let monthGroup: TimelineMonthGroup
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     /// Format: "January 2025"
     private var title: String {
@@ -29,8 +28,7 @@ struct TimelineMonthDetailView: View {
                 TimelineMonthSection(
                     group: monthGroup,
                     allMemories: allMemories,
-                    memoryDataService: memoryDataService,
-                    categoryDataService: categoryDataService,
+                    services: services,
                     onToggleFavourite: { _ in }
                 )
                 .padding(.horizontal)
@@ -50,8 +48,7 @@ struct TimelineMonthDetailView: View {
         TimelineMonthDetailView(
             monthGroup: TimelinePreviewData.monthGroup,
             allMemories: TimelinePreviewData.memories,
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-            categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+            services: AppServices(modelContext: PreviewContainer.context),
         )
     }
     .modelContainer(PreviewContainer.shared)

@@ -7,7 +7,7 @@ struct MemoryImageView: View {
     var body: some View {
         Color.snapCardLight
             .overlay {
-                if let uiImage = ImageStorageService.loadImage(fileName: fileName) {
+                if let uiImage = ImageStorageService.live.loadImage(fileName: fileName) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()

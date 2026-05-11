@@ -4,8 +4,7 @@ import SwiftData
 struct TimelineDayListView: View {
     let yearGroups: [TimelineYearGroup]
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     let onToggleFavourite: (Memory) -> Void
 
     var body: some View {
@@ -18,8 +17,7 @@ struct TimelineDayListView: View {
                                 TimelineMonthSection(
                                     group: monthGroup,
                                     allMemories: allMemories,
-                                    memoryDataService: memoryDataService,
-                                    categoryDataService: categoryDataService,
+                                    services: services,
                                     onToggleFavourite: onToggleFavourite
                                 )
                             }
@@ -43,8 +41,7 @@ struct TimelineDayListView: View {
             TimelineDayListView(
                 yearGroups: TimelinePreviewData.yearGroups,
                 allMemories: TimelinePreviewData.memories,
-                memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                categoryDataService: CategoryDataService(modelContext: PreviewContainer.context),
+                services: AppServices(modelContext: PreviewContainer.context),
                 onToggleFavourite: { _ in }
             )
         }

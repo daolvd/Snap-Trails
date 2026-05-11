@@ -1,11 +1,16 @@
 import CoreLocation
 
-final class GeocodingService {
+protocol GeocodingServiceProtocol {
+    func reverseGeocode(location: CLLocation) async -> String?
+}
+
+final class GeocodingService: GeocodingServiceProtocol {
     private let geocoder = CLGeocoder()
     private var cache: [String: String] = [:]
 
-    func reverseGeocode(location: CLLocation) async -> String {
-        let key = String(format: "%.4f,%.4f",
+    func reverseGeocode(location: CLLocation) async -> String? {
+        let precision = AppConstants.geocodingCacheCoordinatePrecision
+        let key = String(format: "%.\(precision)f,%.\(precision)f",
             location.coordinate.latitude,
             location.coordinate.longitude)
 
@@ -14,20 +19,23 @@ final class GeocodingService {
         do {
             let placemarks = try await geocoder.reverseGeocodeLocation(location)
 
-            guard let place = placemarks.first else {
-                return "Location unavailable"
-            }
+            guard let place = placemarks.first else { return nil }
 
             let parts = [place.name, place.locality, place.administrativeArea]
                 .compactMap { $0 }
                 .filter { !$0.isEmpty }
 
-            let result = parts.isEmpty ? "Location unavailable" : parts.joined(separator: ", ")
+            guard !parts.isEmpty else { return nil }
+
+            let result = parts.joined(separator: ", ")
             cache[key] = result
             return result
-
         } catch {
-            return "Location unavailable"
+            AppLog.warning(
+                "Reverse-geocode failed: \(error.localizedDescription)",
+                category: .location
+            )
+            return nil
         }
     }
 }

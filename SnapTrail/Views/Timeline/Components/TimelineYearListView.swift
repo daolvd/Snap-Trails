@@ -4,8 +4,7 @@ import SwiftData
 struct TimelineYearListView: View {
     let yearGroups: [TimelineYearGroup]
     let allMemories: [Memory]
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     private let columns = [
         GridItem(.adaptive(minimum: 360, maximum: 640), spacing: 22, alignment: .top)
@@ -18,8 +17,7 @@ struct TimelineYearListView: View {
                     TimelineYearCard(
                         group: yearGroup,
                         allMemories: allMemories,
-                        memoryDataService: memoryDataService,
-                        categoryDataService: categoryDataService
+                        services: services,
                     )
                 }
             }
@@ -37,8 +35,7 @@ struct TimelineYearListView: View {
             TimelineYearListView(
                 yearGroups: TimelinePreviewData.yearGroups,
                 allMemories: TimelinePreviewData.memories,
-                memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-                categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+                services: AppServices(modelContext: PreviewContainer.context),
             )
         }
     }

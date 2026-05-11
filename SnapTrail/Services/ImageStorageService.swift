@@ -1,29 +1,43 @@
 import UIKit
 
-enum ImageStorageService {
-    private static var memoriesDirectory: URL {
-        let documentsDirectory = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
+protocol ImageStorageServiceProtocol {
+    func saveImage(_ image: UIImage) throws -> String
+    func loadImage(fileName: String) -> UIImage?
+    func deleteImage(fileName: String)
+    func imageExists(fileName: String) -> Bool
+}
 
-        return documentsDirectory.appendingPathComponent(
-            AppConstants.memoriesFolderName,
-            isDirectory: true
-        )
+final class ImageStorageService: ImageStorageServiceProtocol {
+    nonisolated(unsafe) static let live: ImageStorageServiceProtocol = ImageStorageService()
+
+    private let fileManager: FileManager
+    private let folderName: String
+    private let compressionQuality: CGFloat
+    private let maxSizeBytes: Int
+
+    init(
+        fileManager: FileManager = .default,
+        folderName: String = AppConstants.memoriesFolderName,
+        compressionQuality: CGFloat = AppConstants.imageCompressionQuality,
+        maxSizeBytes: Int = AppConstants.imageMaxSizeBytes
+    ) {
+        self.fileManager = fileManager
+        self.folderName = folderName
+        self.compressionQuality = compressionQuality
+        self.maxSizeBytes = maxSizeBytes
     }
 
-    static func saveImage(_ image: UIImage) throws -> String {
-        try FileManager.default.createDirectory(
-            at: memoriesDirectory,
-            withIntermediateDirectories: true
-        )
+    private var memoriesDirectory: URL {
+        let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documents.appendingPathComponent(folderName, isDirectory: true)
+    }
 
-        guard let imageData = image.jpegData(compressionQuality: 0.85) else {
+    func saveImage(_ image: UIImage) throws -> String {
+        try fileManager.createDirectory(at: memoriesDirectory, withIntermediateDirectories: true)
+
+        guard let imageData = image.jpegData(compressionQuality: compressionQuality) else {
             throw AppError.imageSaveFailed
         }
-
-        let maxSizeBytes = 50 * 1024 * 1024
         guard imageData.count <= maxSizeBytes else {
             throw AppError.imageTooLarge
         }
@@ -39,32 +53,39 @@ enum ImageStorageService {
         }
     }
 
-    static func loadImage(fileName: String) -> UIImage? {
+    func loadImage(fileName: String) -> UIImage? {
         let fileURL = memoriesDirectory.appendingPathComponent(fileName)
-
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        guard fileManager.fileExists(atPath: fileURL.path) else { return nil }
+        do {
+            let data = try Data(contentsOf: fileURL)
+            return UIImage(data: data)
+        } catch {
+            AppLog.error(
+                "Failed to read image file '\(fileName)'",
+                category: .storage,
+                error: error
+            )
             return nil
         }
-
-        guard let data = try? Data(contentsOf: fileURL) else {
-            return nil
-        }
-
-        return UIImage(data: data)
     }
 
-    static func deleteImage(fileName: String) {
+    /// Idempotent: deleting a non-existent file is a no-op.
+    func deleteImage(fileName: String) {
         let fileURL = memoriesDirectory.appendingPathComponent(fileName)
-
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            return
+        guard fileManager.fileExists(atPath: fileURL.path) else { return }
+        do {
+            try fileManager.removeItem(at: fileURL)
+        } catch {
+            AppLog.error(
+                "Failed to delete image file '\(fileName)'",
+                category: .storage,
+                error: error
+            )
         }
-
-        try? FileManager.default.removeItem(at: fileURL)
     }
 
-    static func imageExists(fileName: String) -> Bool {
+    func imageExists(fileName: String) -> Bool {
         let fileURL = memoriesDirectory.appendingPathComponent(fileName)
-        return FileManager.default.fileExists(atPath: fileURL.path)
+        return fileManager.fileExists(atPath: fileURL.path)
     }
 }

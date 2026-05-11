@@ -13,7 +13,6 @@ enum PreviewContainer {
             for: Memory.self, MemoryCategory.self,
             configurations: configuration
         )
-        // Seed sample data
         let ctx = container.mainContext
 
         let study = MemoryCategory(name: "Study", iconName: "book.fill", colorName: "#4DA8FF")
@@ -28,9 +27,7 @@ enum PreviewContainer {
 
         let m1 = Memory(
             imageFileName: "preview-1.jpg",
-            locationName: "UTS Building 11",
-            latitude: -33.8836,
-            longitude: 151.2006,
+            location: GeoLocation(latitude: -33.8836, longitude: 151.2006, name: "UTS Building 11"),
             dateTime: Date(),
             caption: "Studying hard for finals",
             isFavourite: true,
@@ -38,9 +35,7 @@ enum PreviewContainer {
         )
         let m2 = Memory(
             imageFileName: "preview-2.jpg",
-            locationName: "Central Station",
-            latitude: -33.8833,
-            longitude: 151.2054,
+            location: GeoLocation(latitude: -33.8833, longitude: 151.2054, name: "Central Station"),
             dateTime: Date().addingTimeInterval(-86400),
             caption: "Morning commute",
             isFavourite: false,
@@ -48,9 +43,7 @@ enum PreviewContainer {
         )
         let m3 = Memory(
             imageFileName: "preview-3.jpg",
-            locationName: "Darling Harbour",
-            latitude: -33.8752,
-            longitude: 151.2010,
+            location: GeoLocation(latitude: -33.8752, longitude: 151.2010, name: "Darling Harbour"),
             dateTime: Date().addingTimeInterval(-172800),
             caption: "Midnight ramen run",
             isFavourite: true,
@@ -72,9 +65,7 @@ enum PreviewContainer {
     static var sampleMemory: Memory {
         Memory(
             imageFileName: "preview-sample.jpg",
-            locationName: "Cascades North",
-            latitude: -33.8836,
-            longitude: 151.2006,
+            location: GeoLocation(latitude: -33.8836, longitude: 151.2006, name: "Cascades North"),
             dateTime: Date(),
             caption: "Scaling the edges of the world today. The view is absolutely breathtaking.",
             isFavourite: true

@@ -1,10 +1,3 @@
-//
-//  CameraView.swift
-//  SnapTrail
-//
-//  Created by Niramon Kitrattanasak on 28/4/2026.
-//
-
 import SwiftUI
 import UIKit
 import CoreLocation
@@ -12,8 +5,7 @@ import SwiftData
 
 
 struct CameraView: View {
-    let memoryDataService: MemoryDataService
-    let categoryDataService: CategoryDataService
+    let services: AppServices
 
     @State private var selectedImage: UIImage?
     @State private var showCamera = false
@@ -30,13 +22,11 @@ struct CameraView: View {
                     let screenHeight = geo.size.height
                     let horizontalPadding: CGFloat = 24
                     let previewWidth = screenWidth - horizontalPadding * 2
-                    // Photo preview takes ~55% of available height, clamped
                     let previewHeight = min(max(previewWidth * 1.1, 280), screenHeight * 0.58)
 
                     VStack(spacing: 0) {
                         Spacer()
 
-                        // Photo preview area
                         ZStack {
                             RoundedRectangle(cornerRadius: 24)
                                 .fill(Color.snapCard)
@@ -68,14 +58,9 @@ struct CameraView: View {
 
                         Spacer()
 
-                        // Capture controls
                         HStack(spacing: 40) {
-                            // Flash toggle
-                            IconButton(systemName: "bolt.slash.fill", size: 56) {
-                                // Flash not available in picker mode
-                            }
+                            IconButton(systemName: "bolt.slash.fill", size: 56) { }
 
-                            // Shutter button — always opens camera
                             Button {
                                 showCamera = true
                             } label: {
@@ -89,14 +74,12 @@ struct CameraView: View {
                                     )
                             }
 
-                            // Photo library
                             IconButton(systemName: "photo.on.rectangle") {
                                 showGallery = true
                             }
                         }
                         .padding(.bottom, 16)
 
-                        // Location badge
                         HStack(spacing: 6) {
                             Image(systemName: "mappin.circle.fill")
                                 .font(.caption)
@@ -140,8 +123,7 @@ struct CameraView: View {
                 if let image = selectedImage {
                     SaveMemoryView(
                         image: image,
-                        memoryDataService: memoryDataService,
-                        categoryDataService: categoryDataService,
+                        services: services,
                         onDismiss: {
                             selectedImage = nil
                             showSaveMemory = false
@@ -154,9 +136,6 @@ struct CameraView: View {
 }
 
 #Preview {
-    CameraView(
-        memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
-    )
-    .modelContainer(PreviewContainer.shared)
+    CameraView(services: AppServices(modelContext: PreviewContainer.context))
+        .modelContainer(PreviewContainer.shared)
 }

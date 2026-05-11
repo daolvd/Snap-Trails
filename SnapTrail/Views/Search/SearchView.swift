@@ -3,7 +3,7 @@ import SwiftData
 
 struct SearchView: View {
     @ObservedObject var viewModel: SearchViewModel
-    let categoryDataService: CategoryDataService
+    let services: AppServices
     @Environment(\.dismiss) private var dismiss
 
     @State private var showFromDatePicker = false
@@ -198,8 +198,7 @@ struct SearchView: View {
                                         MemoryDetailView(
                                             memories: viewModel.results,
                                             initialIndex: index,
-                                            memoryDataService: viewModel.memoryDataService,
-                                            categoryDataService: categoryDataService
+                                            services: services
                                         )
                                     } label: {
                                         searchResultRow(memory: memory)
@@ -247,7 +246,7 @@ struct SearchView: View {
                 .clipped()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(memory.locationName)
+                Text(memory.displayLocationName)
                     .font(.headline)
                     .foregroundColor(.snapTextPrimary)
                     .lineLimit(1)
@@ -279,12 +278,13 @@ struct SearchView: View {
 }
 
 #Preview {
+    let services = AppServices(modelContext: PreviewContainer.context)
     SearchView(
         viewModel: SearchViewModel(
-            memoryDataService: MemoryDataService(modelContext: PreviewContainer.context),
-            categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+            memoryDataService: services.memoryDataService,
+            categoryDataService: services.categoryDataService
         ),
-        categoryDataService: CategoryDataService(modelContext: PreviewContainer.context)
+        services: services
     )
     .modelContainer(PreviewContainer.shared)
 }

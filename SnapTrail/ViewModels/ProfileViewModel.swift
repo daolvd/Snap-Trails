@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 /// Statistics snapshot computed from all stored memories.
-struct ProfileStats {
+struct ProfileStats: Equatable, Hashable {
     var totalCount: Int = 0
     var thisYearCount: Int = 0
     var thisMonthCount: Int = 0
@@ -18,7 +18,7 @@ final class ProfileViewModel: ObservableObject {
     // MARK: - Profile fields
 
     @Published var displayName: String {
-        didSet { UserProfileService.shared.displayName = displayName }
+        didSet { userProfileService.displayName = displayName }
     }
     @Published var profileImage: UIImage?
 
@@ -35,12 +35,17 @@ final class ProfileViewModel: ObservableObject {
 
     // MARK: - Private
 
-    private let memoryDataService: MemoryDataService
+    private let memoryDataService: MemoryDataServiceProtocol
+    private var userProfileService: UserProfileServiceProtocol
 
-    init(memoryDataService: MemoryDataService) {
+    init(
+        memoryDataService: MemoryDataServiceProtocol,
+        userProfileService: UserProfileServiceProtocol
+    ) {
         self.memoryDataService = memoryDataService
-        self.displayName = UserProfileService.shared.displayName
-        self.profileImage = UserProfileService.shared.loadPhoto()
+        self.userProfileService = userProfileService
+        self.displayName = userProfileService.displayName
+        self.profileImage = userProfileService.loadPhoto()
     }
 
     // MARK: - Name editing
@@ -66,23 +71,28 @@ final class ProfileViewModel: ObservableObject {
 
     func applyPickedImage(_ image: UIImage) {
         profileImage = image
-        UserProfileService.shared.savePhoto(image)
+        userProfileService.savePhoto(image)
     }
 
     func removePhoto() {
         profileImage = nil
-        UserProfileService.shared.deletePhoto()
+        userProfileService.deletePhoto()
     }
 
     // MARK: - Stats
 
     func refreshStats() {
-        guard let memories = try? memoryDataService.fetchAll() else { return }
+        let memories: [Memory]
+        do {
+            memories = try memoryDataService.fetchAll()
+        } catch {
+            AppLog.error("Failed to load memories for stats", category: .data, error: error)
+            return
+        }
 
         let calendar = Calendar.current
         let now = Date()
 
-        // Start of current year / month / week
         let startOfYear = calendar.date(from: calendar.dateComponents([.year], from: now))!
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
         let startOfWeek = calendar.date(
@@ -106,7 +116,6 @@ final class ProfileViewModel: ObservableObject {
     private func computeStreak(memories: [Memory], calendar: Calendar, now: Date) -> Int {
         guard !memories.isEmpty else { return 0 }
 
-        // Unique set of date-only components (year, month, day) that have a memory
         let daysWithMemory: Set<String> = Set(memories.map { memory in
             let c = calendar.dateComponents([.year, .month, .day], from: memory.dateTime)
             return "\(c.year!)-\(c.month!)-\(c.day!)"
@@ -120,10 +129,7 @@ final class ProfileViewModel: ObservableObject {
         var streak = 0
         var checkDate = now
 
-        // Allow streak to include today even if no memory logged yet today;
-        // start checking from yesterday if today has no memory
         if !daysWithMemory.contains(key(for: checkDate)) {
-            // Try yesterday as the anchor
             guard let yesterday = calendar.date(byAdding: .day, value: -1, to: checkDate),
                   daysWithMemory.contains(key(for: yesterday)) else {
                 return 0

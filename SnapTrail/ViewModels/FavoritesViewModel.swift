@@ -6,9 +6,9 @@ final class FavoritesViewModel: ObservableObject {
     @Published var favourites: [Memory] = []
     @Published var errorMessage: String?
 
-    let memoryDataService: MemoryDataService
+    let memoryDataService: MemoryDataServiceProtocol
 
-    init(memoryDataService: MemoryDataService) {
+    init(memoryDataService: MemoryDataServiceProtocol) {
         self.memoryDataService = memoryDataService
     }
 

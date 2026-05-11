@@ -9,9 +9,9 @@ final class CategoryViewModel: ObservableObject {
     @Published var selectedColor: Color = Color(hex: "#AEFF00")
     @Published var errorMessage: String?
 
-    private let categoryDataService: CategoryDataService
+    private let categoryDataService: CategoryDataServiceProtocol
 
-    init(categoryDataService: CategoryDataService) {
+    init(categoryDataService: CategoryDataServiceProtocol) {
         self.categoryDataService = categoryDataService
     }
 

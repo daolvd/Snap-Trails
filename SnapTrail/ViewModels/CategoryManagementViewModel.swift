@@ -1,10 +1,3 @@
-//
-//  CategoryManagementViewModel.swift
-//  SnapTrail
-//
-//  Created by Quang Huy Vu on 11/5/2026.
-//
-
 import SwiftUI
 import Combine
 
@@ -26,11 +19,13 @@ final class CategoryManagementViewModel: ObservableObject {
     @Published var categoryToDelete: MemoryCategory? = nil
     @Published var errorMessage: String? = nil
 
-    private let categoryDataService: CategoryDataService
-    private let memoryDataService: MemoryDataService
+    private let categoryDataService: CategoryDataServiceProtocol
+    private let memoryDataService: MemoryDataServiceProtocol
 
-    init(categoryDataService: CategoryDataService,
-         memoryDataService: MemoryDataService) {
+    init(
+        categoryDataService: CategoryDataServiceProtocol,
+        memoryDataService: MemoryDataServiceProtocol
+    ) {
         self.categoryDataService = categoryDataService
         self.memoryDataService = memoryDataService
     }

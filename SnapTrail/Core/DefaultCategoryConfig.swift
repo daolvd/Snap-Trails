@@ -13,12 +13,19 @@ struct DefaultCategoryConfig: Codable {
     ]
 
     static func load() -> [DefaultCategoryConfig] {
-        guard let url = Bundle.main.url(forResource: "DefaultCategories", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let configs = try? JSONDecoder().decode([DefaultCategoryConfig].self, from: data)
-        else {
+        guard let url = Bundle.main.url(forResource: "DefaultCategories", withExtension: "json") else {
             return defaults
         }
-        return configs
+        do {
+            let data = try Data(contentsOf: url)
+            return try JSONDecoder().decode([DefaultCategoryConfig].self, from: data)
+        } catch {
+            AppLog.error(
+                "Failed to load DefaultCategories.json, falling back to built-in defaults",
+                category: .data,
+                error: error
+            )
+            return defaults
+        }
     }
 }

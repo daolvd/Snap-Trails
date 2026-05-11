@@ -6,33 +6,36 @@ final class SettingsViewModel: ObservableObject {
     @Published var isDailyReminderEnabled: Bool
     @Published var errorMessage: String?
 
-    init() {
-        self.isDailyReminderEnabled = UserDefaults.standard.bool(
-            forKey: AppConstants.isDailyReminderEnabledKey
-        )
+    private let notificationService: NotificationServiceProtocol
+    private let defaults: UserDefaults
+
+    init(
+        notificationService: NotificationServiceProtocol,
+        defaults: UserDefaults = .standard
+    ) {
+        self.notificationService = notificationService
+        self.defaults = defaults
+        self.isDailyReminderEnabled = defaults.bool(forKey: AppConstants.isDailyReminderEnabledKey)
     }
 
     func toggleDailyReminder() {
         isDailyReminderEnabled.toggle()
 
-        UserDefaults.standard.set(
-            isDailyReminderEnabled,
-            forKey: AppConstants.isDailyReminderEnabledKey
-        )
+        defaults.set(isDailyReminderEnabled, forKey: AppConstants.isDailyReminderEnabledKey)
 
         if isDailyReminderEnabled {
             Task {
-                let granted = await NotificationService.shared.requestPermission()
+                let granted = await notificationService.requestPermission()
                 if granted {
-                    NotificationService.shared.scheduleDailyReminder()
+                    notificationService.scheduleDailyReminder()
                 } else {
                     isDailyReminderEnabled = false
-                    UserDefaults.standard.set(false, forKey: AppConstants.isDailyReminderEnabledKey)
+                    defaults.set(false, forKey: AppConstants.isDailyReminderEnabledKey)
                     errorMessage = AppError.permissionDenied.localizedDescription
                 }
             }
         } else {
-            NotificationService.shared.cancelReminder()
+            notificationService.cancelReminder()
         }
     }
 }

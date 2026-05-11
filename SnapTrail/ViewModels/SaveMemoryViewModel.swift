@@ -6,55 +6,64 @@ import CoreLocation
 final class SaveMemoryViewModel: ObservableObject {
     @Published var caption = ""
     @Published var selectedCategory: MemoryCategory?
-    @Published var locationName = "Location unavailable"
+    @Published var locationName: String?
     @Published var isSaving = false
     @Published var errorMessage: String?
 
-    static let captionMaxLength = 1000
-    static let captionWarningThreshold = 900
+    var captionMaxLength: Int { AppConstants.captionMaxLength }
 
     var captionCharacterCount: Int { caption.count }
 
     var captionWarning: String? {
-        caption.count >= Self.captionWarningThreshold
-            ? "\(caption.count)/\(Self.captionMaxLength)"
+        caption.count >= AppConstants.captionWarningThreshold
+            ? "\(caption.count)/\(AppConstants.captionMaxLength)"
             : nil
     }
 
-    var isCaptionValid: Bool { caption.count <= Self.captionMaxLength }
+    var isCaptionValid: Bool { caption.count <= AppConstants.captionMaxLength }
 
-    private let memoryDataService: MemoryDataService
+    var displayLocationName: String { locationName ?? "Unknown location" }
 
-    init(memoryDataService: MemoryDataService) {
+    private let memoryDataService: MemoryDataServiceProtocol
+    private let imageStorage: ImageStorageServiceProtocol
+
+    init(
+        memoryDataService: MemoryDataServiceProtocol,
+        imageStorage: ImageStorageServiceProtocol = ImageStorageService.live
+    ) {
         self.memoryDataService = memoryDataService
+        self.imageStorage = imageStorage
     }
 
-    func saveMemory(image: UIImage, location: CLLocation?, capturedDate: Date = Date()) -> Bool {
+    func saveMemory(
+        image: UIImage,
+        location: CLLocation?,
+        capturedDate: Date = Date()
+    ) -> Bool {
         guard isCaptionValid else {
             errorMessage = AppError.captionTooLong.localizedDescription
             return false
         }
 
-        if let location {
-            let lat = location.coordinate.latitude
-            let lon = location.coordinate.longitude
-            guard (-90...90).contains(lat) && (-180...180).contains(lon) else {
-                errorMessage = AppError.invalidCoordinates.localizedDescription
-                return false
-            }
+        let geo = GeoLocation(
+            coordinate: location?.coordinate,
+            name: locationName ?? ""
+        )
+
+        if location != nil && geo == nil {
+            errorMessage = AppError.invalidCoordinates.localizedDescription
+            return false
         }
 
         isSaving = true
         defer { isSaving = false }
 
         do {
-            let fileName = try ImageStorageService.saveImage(image)
+            let fileName = try imageStorage.saveImage(image)
 
             let memory = Memory(
                 imageFileName: fileName,
-                locationName: locationName,
-                latitude: location?.coordinate.latitude ?? 0,
-                longitude: location?.coordinate.longitude ?? 0,
+                location: geo,
                 dateTime: capturedDate,
                 caption: caption,
                 isFavourite: false,
